@@ -1,27 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, Text } from 'react-native'; // Removed Svg import to avoid dependency issues if not installed
+import { View, ScrollView, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Card } from '../components/Card';
-import { Button } from '../components/Button';
-import { AppText } from '../components/Typography'; // Fixed default import to named
+import { AppText } from '../components/Typography';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { Svg, Circle } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 
-// Mock Data
-const MOCK_LOGS = [
-    { day: 'M', height: 40 },
-    { day: 'T', height: 65 },
-    { day: 'W', height: 30 },
-    { day: 'T', height: 85 },
-    { day: 'F', height: 50 },
-    { day: 'S', height: 20 },
-    { day: 'S', height: 90 },
-];
-
 export const DashboardScreen = ({ navigation }) => {
-    const [resonance, setResonance] = useState(85);
+    // 0 = Morning, 1 = Afternoon, 2 = Evening
+    const [ritualState, setRitualState] = useState(0);
+    const [ringProgress, setRingProgress] = useState(0.0);
+
+    const handleRitualComplete = () => {
+        // Haptic feedback placeholder
+        if (ritualState < 2) {
+            setRitualState(prev => prev + 1);
+            setRingProgress(prev => prev + 0.33);
+        } else if (ritualState === 2 && ringProgress < 1) {
+            setRingProgress(1); // Complete the ring
+        }
+    };
+
+    const renderRitualContent = () => {
+        switch (ritualState) {
+            case 0:
+                return (
+                    <View style={styles.ritualPrompt}>
+                        <AppText variant="caption">Morning Ritual</AppText>
+                        <AppText variant="heading2">30-Second Mood Pulse</AppText>
+                    </View>
+                );
+            case 1:
+                return (
+                    <View style={styles.ritualPrompt}>
+                        <AppText variant="caption">Afternoon Pulse</AppText>
+                        <AppText variant="heading2">How is your focus right now?</AppText>
+                    </View>
+                );
+            case 2:
+                return (
+                    <View style={styles.ritualPrompt}>
+                        <AppText variant="caption">Evening Wind-down</AppText>
+                        <AppText variant="heading2">Sleep Prep & Reflection</AppText>
+                    </View>
+                );
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -33,73 +58,72 @@ export const DashboardScreen = ({ navigation }) => {
             <ScrollView contentContainerStyle={styles.content}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <AppText variant="heading1">Good Morning, Jane</AppText>
-                    <AppText variant="subtitle">OCTOBER 24, MONDAY</AppText>
+                    <AppText variant="heading1">Good Morning, Eric.</AppText>
+                    <AppText variant="subtitle">Your body is adapting.</AppText>
                 </View>
 
-                {/* Resonance Ring */}
+                {/* Ritual Ring */}
                 <View style={styles.resonanceContainer}>
                     <View style={styles.ringWrapper}>
-                        <Svg height="200" width="200" viewBox="0 0 180 180">
+                        <Svg height="260" width="260" viewBox="0 0 200 200">
+                            {/* Track */}
                             <Circle
-                                cx="90"
-                                cy="90"
-                                r="80"
+                                cx="100"
+                                cy="100"
+                                r="90"
                                 stroke={COLORS.surfaceBorder}
-                                strokeWidth="6"
+                                strokeWidth="8"
                                 fill="none"
                             />
+                            {/* Progress */}
                             <Circle
-                                cx="90"
-                                cy="90"
-                                r="80"
+                                cx="100"
+                                cy="100"
+                                r="90"
                                 stroke={COLORS.primary}
-                                strokeWidth="6"
+                                strokeWidth="8"
                                 fill="none"
-                                strokeDasharray="502"
-                                strokeDashoffset={502 - (502 * (resonance / 100))}
+                                strokeDasharray="565"
+                                strokeDashoffset={565 - (565 * ringProgress)}
                                 strokeLinecap="round"
                                 rotation="-90"
-                                origin="90, 90"
+                                origin="100, 100"
                             />
                         </Svg>
-                        <View style={styles.resonanceText}>
-                            <Text style={styles.score}>{resonance}</Text>
-                            <AppText variant="caption">RESONANCE</AppText>
+
+                        <View style={styles.ritualCenter}>
+                            {ringProgress >= 1 ? (
+                                <View style={styles.completedState}>
+                                    <AppText style={{ fontSize: 40 }}>✨</AppText>
+                                    <AppText variant="heading2" style={{ color: COLORS.primary }}>All Done!</AppText>
+                                </View>
+                            ) : (
+                                <TouchableOpacity
+                                    style={styles.ritualButton}
+                                    onPress={handleRitualComplete}
+                                    activeOpacity={0.8}
+                                >
+                                    {renderRitualContent()}
+                                    <View style={styles.startBadge}>
+                                        <AppText variant="buttonText" style={{ color: '#FFF' }}>Start Ritual</AppText>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
                         </View>
                     </View>
                 </View>
 
-                {/* Chart */}
-                <Card style={styles.chartCard} glass>
-                    <View style={styles.chartHeader}>
-                        <AppText variant="heading2" style={{ fontSize: 16 }}>Symptom Intensity</AppText>
-                        <AppText variant="caption">LAST 7 DAYS</AppText>
+                {/* The "Daily Gem" (Variable Reward) */}
+                {ringProgress >= 1 && (
+                    <View style={[styles.card, styles.gemCard]}>
+                        <AppText variant="caption" style={styles.gemTag}>ERIC, DID YOU KNOW?</AppText>
+                        <AppText variant="body" style={styles.insightText}>
+                            Your joint pain often spikes 24 hours after a low-activity day. Tomorrow is a great day for a light walk.
+                        </AppText>
+                        <AppText variant="caption" style={styles.geminiTag}>✨ Gemini Intelligence</AppText>
                     </View>
+                )}
 
-                    <View style={styles.chartContainer}>
-                        {MOCK_LOGS.map((item, index) => (
-                            <View key={index} style={styles.chartCol}>
-                                <View style={[styles.bar, { height: \`\${item.height}%\`, backgroundColor: item.height > 50 ? COLORS.primary : COLORS.secondary }]} />
-                                <AppText variant="caption" style={{ marginTop: 8, fontSize: 10 }}>{item.day}</AppText>
-                            </View>
-                        ))}
-                    </View>
-                </Card>
-
-                {/* Insight */}
-                <Card style={styles.insightCard}>
-                    <AppText variant="body" style={styles.insightText}>
-                        "Your resonance is high today! Keep prioritizing sleep to maintain this balance."
-                    </AppText>
-                </Card>
-
-                {/* Action */}
-                <Button
-                    title="Log Morning Check-in"
-                    onPress={() => navigation.navigate('Logging')}
-                    style={styles.actionBtn}
-                />
             </ScrollView>
         </View>
     );
@@ -112,67 +136,84 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: SPACING.lg,
-        paddingTop: 60,
+        paddingTop: 80,
         paddingBottom: 40,
     },
     header: {
         marginBottom: SPACING.xl,
+        alignItems: 'center',
     },
     resonanceContainer: {
         alignItems: 'center',
         marginBottom: SPACING.xl,
+        marginTop: SPACING.md,
     },
     ringWrapper: {
-        width: 200,
-        height: 200,
+        width: 260,
+        height: 260,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
     },
-    resonanceText: {
+    ritualCenter: {
         position: 'absolute',
+        width: 150,
+        height: 150,
+        borderRadius: 75,
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    score: {
-        fontSize: 64,
-        fontWeight: '800',
-        color: COLORS.primary,
-        lineHeight: 80,
-    },
-    chartCard: {
-        marginBottom: SPACING.lg,
-    },
-    chartHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: SPACING.md,
-    },
-    chartContainer: {
-        flexDirection: 'row',
-        height: 120,
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
-    },
-    chartCol: {
-        alignItems: 'center',
+    ritualButton: {
+        width: '100%',
         height: '100%',
-        justifyContent: 'flex-end',
-        width: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    bar: {
-        width: 8,
-        borderRadius: 4,
-        opacity: 0.8,
+    ritualPrompt: {
+        alignItems: 'center',
+        paddingHorizontal: SPACING.sm,
     },
-    insightCard: {
-        marginBottom: SPACING.xl,
-        borderLeftWidth: 4,
-        borderLeftColor: COLORS.primary,
+    startBadge: {
+        marginTop: SPACING.md,
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: SPACING.md,
+        paddingVertical: SPACING.sm,
+        borderRadius: 20,
+    },
+    completedState: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    card: {
+        backgroundColor: COLORS.surface,
+        borderRadius: RADIUS.md,
+        padding: SPACING.lg,
+        marginBottom: SPACING.lg,
+        shadowColor: COLORS.shadow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+        elevation: 4,
+    },
+    gemCard: {
+        borderWidth: 2,
+        borderColor: 'rgba(255, 88, 100, 0.3)',
+        backgroundColor: '#FFF9FA',
+    },
+    gemTag: {
+        color: COLORS.primary,
+        fontWeight: '800',
+        marginBottom: SPACING.sm,
     },
     insightText: {
-        fontStyle: 'italic',
+        fontSize: 18,
+        lineHeight: 26,
+        color: COLORS.textMain,
     },
-    actionBtn: {
-        marginBottom: 40,
-    }
+    geminiTag: {
+        marginTop: SPACING.md,
+        color: '#8A8A9D',
+        fontWeight: '700',
+        alignSelf: 'flex-end',
+    },
 });

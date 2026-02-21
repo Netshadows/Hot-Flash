@@ -16,8 +16,8 @@ export const LoggingScreen = ({ navigation }) => {
             </View>
             {/* Mock Slider for visual representation */}
             <View style={styles.sliderTrack}>
-                <View style={[styles.sliderFill, { width: \`\${(vasoSeverity / 4) * 100}%\` }]} />
-                <View style={[styles.sliderThumb, { left: \`\${(vasoSeverity / 4) * 95}%\` }]} />
+                <View style={[styles.sliderFill, { width: `${(vasoSeverity / 4) * 100}%` }]} />
+                <View style={[styles.sliderThumb, { left: `${(vasoSeverity / 4) * 95}%` }]} />
             </View>
             <View style={styles.sliderLabels}>
                 <AppText variant="caption">None</AppText>

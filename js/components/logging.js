@@ -46,11 +46,26 @@ window.renderLogging = function () {
         entry.urogenital = grabSeverity('uro', ['Dryness', 'Pain', 'Libido']);
         entry.somatic = grabSeverity('som', ['JointPain', 'Headache', 'Fatigue']);
 
-        const logs = JSON.parse(localStorage.getItem('hotflash_logs') || '[]');
-        logs.unshift(entry);
-        localStorage.setItem('hotflash_logs', JSON.stringify(logs));
-
-        window.app.navigate('dashboard');
+        // Save to Firebase explicitly
+        if (window.db && window.auth && window.auth.currentUser) {
+            window.db.collection('users').doc(window.auth.currentUser.uid).collection('logs').add(entry)
+                .then(() => {
+                    const logs = JSON.parse(localStorage.getItem('hotflash_logs') || '[]');
+                    logs.unshift(entry);
+                    localStorage.setItem('hotflash_logs', JSON.stringify(logs));
+                    window.app.navigate('dashboard');
+                })
+                .catch(err => {
+                    console.error("Firebase save failed:", err);
+                    alert("Error saving log to cloud. Try again.");
+                });
+        } else {
+            console.warn("No firebase or user, saving locally only");
+            const logs = JSON.parse(localStorage.getItem('hotflash_logs') || '[]');
+            logs.unshift(entry);
+            localStorage.setItem('hotflash_logs', JSON.stringify(logs));
+            window.app.navigate('dashboard');
+        }
     };
 
     // --- HTML Generators ---

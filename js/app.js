@@ -1,5 +1,6 @@
 // NOTE: We use window.renderX functions to allow local file execution without modules
 const routes = {
+    'login': { title: 'Login', render: window.renderLogin },
     'dashboard': { title: 'Dashboard', render: window.renderDashboard },
     'logging': { title: 'Log Symptom', render: window.renderLogging },
     'resources': { title: 'Library', render: window.renderResources },
@@ -19,6 +20,23 @@ class App {
     init() {
         // Theme Logic
         this.initTheme();
+
+        // Firebase Auth State Observer
+        if (window.auth) {
+            window.auth.onAuthStateChanged(user => {
+                if (user) {
+                    if (this.currentRoute === 'login' || !this.currentRoute) {
+                        this.navigate('dashboard');
+                    }
+                    const btn = document.getElementById('logout-btn');
+                    if (btn) btn.style.display = 'inline-block';
+                } else {
+                    this.navigate('login');
+                    const btn = document.getElementById('logout-btn');
+                    if (btn) btn.style.display = 'none';
+                }
+            });
+        }
 
         this.navItems.forEach(item => {
             item.addEventListener('click', (e) => {
@@ -52,6 +70,13 @@ class App {
 
     navigate(routeKey) {
         if (!routes[routeKey]) return;
+
+        // Hide UI elements on Login Route
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) bottomNav.style.display = (routeKey === 'login') ? 'none' : 'flex';
+
+        const avatar = document.querySelector('.user-avatar');
+        if (avatar) avatar.style.display = (routeKey === 'login') ? 'none' : 'block';
 
         // Update State
         this.currentRoute = routeKey;
