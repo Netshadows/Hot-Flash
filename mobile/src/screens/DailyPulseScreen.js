@@ -1,19 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Animated, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Animated, Keyboard, Modal } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 
 const AnimatedPill = ({ item, isSelected, onPress }) => {
-    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const scaleAnim = useRef(new Animated.Value(isSelected ? 1.05 : 1)).current;
 
-    // Animate bounce when selection toggles
     useEffect(() => {
         if (isSelected) {
-            Animated.sequence([
-                Animated.timing(scaleAnim, { toValue: 1.15, duration: 80, useNativeDriver: true }),
-                Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 150, useNativeDriver: true })
-            ]).start();
+            Animated.spring(scaleAnim, { toValue: 1.05, friction: 4, tension: 150, useNativeDriver: true }).start();
         } else {
             Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }).start();
         }
@@ -72,45 +68,53 @@ export const DailyPulseScreen = ({ navigation }) => {
         }
     ];
 
-    const [selectedItems, setSelectedItems] = useState([]);
+    // selectedData is a map: { [id]: { severity: 'Moderate', notes: '' } }
+    const [selectedData, setSelectedData] = useState({});
+    const [activeDrillDown, setActiveDrillDown] = useState(null); // { id, label, categoryTitle }
     const [notes, setNotes] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
     const saveScale = useRef(new Animated.Value(0)).current;
     const saveOpacity = useRef(new Animated.Value(0)).current;
 
-    const toggleItem = (id) => {
-        if (selectedItems.includes(id)) {
-            setSelectedItems(selectedItems.filter(i => i !== id));
-        } else {
-            setSelectedItems([...selectedItems, id]);
+    const handlePillPress = (item, categoryTitle) => {
+        // If not selected, initialize default, then open modal
+        if (!selectedData[item.id]) {
+            setSelectedData(prev => ({ ...prev, [item.id]: { severity: 'Moderate', details: '' } }));
         }
+        setActiveDrillDown({ ...item, categoryTitle });
+    };
+
+    const updateDrillData = (field, value) => {
+        if (!activeDrillDown) return;
+        setSelectedData(prev => ({
+            ...prev,
+            [activeDrillDown.id]: {
+                ...prev[activeDrillDown.id],
+                [field]: value
+            }
+        }));
+    };
+
+    const handleDrillClose = () => setActiveDrillDown(null);
+    const handleDrillRemove = () => {
+        const newData = { ...selectedData };
+        delete newData[activeDrillDown.id];
+        setSelectedData(newData);
+        setActiveDrillDown(null);
     };
 
     const handleSave = () => {
         Keyboard.dismiss();
         setIsSaving(true);
+        console.log("Saving pulse data: ", selectedData);
 
-        // Dopamine "Level Up" Animation Sequence
         Animated.parallel([
-            Animated.timing(saveOpacity, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: true
-            }),
-            Animated.spring(saveScale, {
-                toValue: 1,
-                friction: 5,
-                tension: 60,
-                delay: 100,
-                useNativeDriver: true
-            })
+            Animated.timing(saveOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+            Animated.spring(saveScale, { toValue: 1, friction: 5, tension: 60, delay: 100, useNativeDriver: true })
         ]).start();
 
-        // Navigate back after delay
-        setTimeout(() => {
-            navigation.goBack();
-        }, 1800);
+        setTimeout(() => { navigation.goBack(); }, 1800);
     };
 
     return (
@@ -124,13 +128,13 @@ export const DailyPulseScreen = ({ navigation }) => {
                         <AppText variant="heading2" style={styles.sectionTitle}>{category.title}</AppText>
                         <View style={styles.grid}>
                             {category.items.map((item) => {
-                                const isSelected = selectedItems.includes(item.id);
+                                const isSelected = !!selectedData[item.id];
                                 return (
                                     <AnimatedPill
                                         key={item.id}
                                         item={item}
                                         isSelected={isSelected}
-                                        onPress={() => toggleItem(item.id)}
+                                        onPress={() => handlePillPress(item, category.title)}
                                     />
                                 );
                             })}
@@ -151,12 +155,62 @@ export const DailyPulseScreen = ({ navigation }) => {
                         textAlignVertical="top"
                     />
                 </View>
-
             </ScrollView>
 
             <View style={styles.footer}>
                 <Button title="Save Log" onPress={handleSave} disabled={isSaving} />
             </View>
+
+            {/* Drill-Down Modal */}
+            <Modal visible={!!activeDrillDown} animationType="slide" transparent={true}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <AppText variant="heading2" style={{ marginBottom: SPACING.md }}>{activeDrillDown?.label}</AppText>
+
+                        {activeDrillDown?.categoryTitle === "Symptoms" && (
+                            <View style={{ marginBottom: SPACING.lg }}>
+                                <AppText variant="body" style={{ marginBottom: SPACING.sm, fontWeight: '600' }}>Severity:</AppText>
+                                <View style={styles.severityRow}>
+                                    {['Mild', 'Moderate', 'Severe'].map(sev => {
+                                        const isSevSelected = selectedData[activeDrillDown?.id]?.severity === sev;
+                                        return (
+                                            <TouchableOpacity
+                                                key={sev}
+                                                style={[styles.sevButton, isSevSelected && styles.sevButtonSelected]}
+                                                onPress={() => updateDrillData('severity', sev)}
+                                            >
+                                                <AppText style={[styles.sevButtonText, isSevSelected && styles.sevButtonTextSelected]}>{sev}</AppText>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </View>
+                            </View>
+                        )}
+
+                        <View style={{ marginBottom: SPACING.xl }}>
+                            <AppText variant="body" style={{ marginBottom: SPACING.sm, fontWeight: '600' }}>
+                                {activeDrillDown?.categoryTitle === "Positives" ? "What triggered this positive state?" : "Specific notes or triggers:"}
+                            </AppText>
+                            <TextInput
+                                style={[styles.textInput, { minHeight: 80 }]}
+                                multiline
+                                placeholder="Add context..."
+                                placeholderTextColor={COLORS.textMuted}
+                                value={selectedData[activeDrillDown?.id]?.details || ''}
+                                onChangeText={(val) => updateDrillData('details', val)}
+                                textAlignVertical="top"
+                            />
+                        </View>
+
+                        <View style={{ gap: SPACING.sm }}>
+                            <Button title="Done" onPress={handleDrillClose} />
+                            <TouchableOpacity style={styles.removeBtn} onPress={handleDrillRemove}>
+                                <AppText style={styles.removeBtnText}>Remove from Log</AppText>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
 
             {/* Dopamine Celebration Overlay */}
             {isSaving && (
@@ -169,10 +223,6 @@ export const DailyPulseScreen = ({ navigation }) => {
                             <AppText style={{ fontSize: 24, marginRight: 8 }}>💎</AppText>
                             <AppText variant="heading2" style={{ color: '#FFB300' }}>+10 Gems</AppText>
                         </View>
-
-                        <AppText variant="body" style={{ color: '#4A4A4A', marginTop: 24, textAlign: 'center' }}>
-                            You're building an incredible daily ritual.
-                        </AppText>
                     </Animated.View>
                 </Animated.View>
             )}
@@ -235,5 +285,51 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#FFE082',
         marginTop: SPACING.lg,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: COLORS.surface,
+        borderTopLeftRadius: RADIUS.xl,
+        borderTopRightRadius: RADIUS.xl,
+        padding: SPACING.xl,
+        paddingBottom: 40,
+        minHeight: 300,
+    },
+    severityRow: {
+        flexDirection: 'row',
+        gap: SPACING.sm,
+    },
+    sevButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: RADIUS.md,
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        alignItems: 'center',
+    },
+    sevButtonSelected: {
+        backgroundColor: '#FFE082',
+        borderColor: '#FFB300',
+    },
+    sevButtonText: {
+        color: COLORS.textMain,
+        fontWeight: '500',
+    },
+    sevButtonTextSelected: {
+        color: '#B27D00',
+        fontWeight: '700',
+    },
+    removeBtn: {
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    removeBtnText: {
+        color: COLORS.primary,
+        fontSize: 16,
+        fontWeight: '600',
     }
 });
