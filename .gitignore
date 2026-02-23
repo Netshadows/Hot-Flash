@@ -6,3 +6,5 @@ dist/
 coverage/
 build/
 *.log
+.expo/
+mobile/.expo/

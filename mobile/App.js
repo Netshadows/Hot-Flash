@@ -4,14 +4,16 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
 // Onboarding
-import { WelcomeScreen } from './src/screens/WelcomeScreen';
-import { OnboardingHealthScreen } from './src/screens/OnboardingHealthScreen';
-import { OnboardingProfileScreen } from './src/screens/OnboardingProfileScreen';
-import { OnboardingFrictionScreen } from './src/screens/OnboardingFrictionScreen';
+import { OnboardingGoalScreen } from './src/screens/OnboardingGoalScreen';
+import { OnboardingBaselineScreen } from './src/screens/OnboardingBaselineScreen';
+import { OnboardingSymptomGridScreen } from './src/screens/OnboardingSymptomGridScreen';
+import { OnboardingAnalysisScreen } from './src/screens/OnboardingAnalysisScreen';
 
 // Main App
 import { DashboardScreen } from './src/screens/DashboardScreen';
 import { LoggingScreen } from './src/screens/LoggingScreen';
+import { HealthReportScreen } from './src/screens/HealthReportScreen';
+import { CommunityScreen } from './src/screens/CommunityScreen';
 import { COLORS } from './src/constants/theme';
 
 const Stack = createNativeStackNavigator();
@@ -26,18 +28,25 @@ export default function App() {
                     contentStyle: { backgroundColor: COLORS.background },
                     animation: 'slide_from_right',
                 }}
-                initialRouteName="Welcome"
+                initialRouteName="OnboardingGoal"
             >
                 {/* Onboarding Flow */}
-                <Stack.Screen name="Welcome" component={WelcomeScreen} />
-                <Stack.Screen name="OnboardingHealth" component={OnboardingHealthScreen} />
-                <Stack.Screen name="OnboardingProfile" component={OnboardingProfileScreen} />
-                <Stack.Screen name="OnboardingFriction" component={OnboardingFrictionScreen} />
+                <Stack.Screen name="OnboardingGoal" component={OnboardingGoalScreen} />
+                <Stack.Screen name="OnboardingBaseline" component={OnboardingBaselineScreen} />
+                <Stack.Screen name="OnboardingSymptomGrid" component={OnboardingSymptomGridScreen} />
+                <Stack.Screen name="OnboardingAnalysis" component={OnboardingAnalysisScreen} />
 
                 {/* Main Dashboard (Stubbing Tabs for now due to missing dependency wrapper) */}
                 <Stack.Screen name="MainTabs" component={DashboardScreen} />
 
-                <Stack.Screen name="Logging" component={LoggingScreen} />
+                <Stack.Screen
+                    name="Logging"
+                    component={LoggingScreen}
+                    options={{ presentation: 'modal' }}
+                />
+
+                <Stack.Screen name="HealthReport" component={HealthReportScreen} />
+                <Stack.Screen name="Community" component={CommunityScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

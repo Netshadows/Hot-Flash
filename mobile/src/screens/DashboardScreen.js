@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions, Text, TouchableOpacity, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppText } from '../components/Typography';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { Svg, Circle } from 'react-native-svg';
+import { HealthKitService } from '../services/HealthKitService';
+import { DataStreamType } from '../models/DeviceData';
 
 const { width } = Dimensions.get('window');
 
@@ -11,42 +13,29 @@ export const DashboardScreen = ({ navigation }) => {
     // 0 = Morning, 1 = Afternoon, 2 = Evening
     const [ritualState, setRitualState] = useState(0);
     const [ringProgress, setRingProgress] = useState(0.0);
+    const [healthData, setHealthData] = useState([]);
+    const [isLoadingHealthData, setIsLoadingHealthData] = useState(true);
 
-    const handleRitualComplete = () => {
-        // Haptic feedback placeholder
-        if (ritualState < 2) {
-            setRitualState(prev => prev + 1);
-            setRingProgress(prev => prev + 0.33);
-        } else if (ritualState === 2 && ringProgress < 1) {
-            setRingProgress(1); // Complete the ring
+    useEffect(() => {
+        const loadHealthData = async () => {
+            const hasPermissions = await HealthKitService.requestPermissions();
+            if (hasPermissions) {
+                const data = await HealthKitService.fetchLatestData();
+                setHealthData(data);
+            }
+            setIsLoadingHealthData(false);
         }
-    };
+        loadHealthData();
+    }, []);
 
-    const renderRitualContent = () => {
-        switch (ritualState) {
-            case 0:
-                return (
-                    <View style={styles.ritualPrompt}>
-                        <AppText variant="caption">Morning Ritual</AppText>
-                        <AppText variant="heading2">30-Second Mood Pulse</AppText>
-                    </View>
-                );
-            case 1:
-                return (
-                    <View style={styles.ritualPrompt}>
-                        <AppText variant="caption">Afternoon Pulse</AppText>
-                        <AppText variant="heading2">How is your focus right now?</AppText>
-                    </View>
-                );
-            case 2:
-                return (
-                    <View style={styles.ritualPrompt}>
-                        <AppText variant="caption">Evening Wind-down</AppText>
-                        <AppText variant="heading2">Sleep Prep & Reflection</AppText>
-                    </View>
-                );
-        }
-    };
+    const renderStory = (title, imageColor) => (
+        <TouchableOpacity style={styles.storyContainer} activeOpacity={0.8}>
+            <View style={[styles.storyRing, { borderColor: imageColor }]}>
+                <View style={[styles.storyImage, { backgroundColor: imageColor }]} />
+            </View>
+            <AppText variant="caption" style={styles.storyTitle}>{title}</AppText>
+        </TouchableOpacity>
+    );
 
     return (
         <View style={styles.container}>
@@ -56,73 +45,82 @@ export const DashboardScreen = ({ navigation }) => {
             />
 
             <ScrollView contentContainerStyle={styles.content}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <AppText variant="heading1">Good Morning, Eric.</AppText>
-                    <AppText variant="subtitle">Your body is adapting.</AppText>
-                </View>
-
-                {/* Ritual Ring */}
-                <View style={styles.resonanceContainer}>
-                    <View style={styles.ringWrapper}>
-                        <Svg height="260" width="260" viewBox="0 0 200 200">
-                            {/* Track */}
-                            <Circle
-                                cx="100"
-                                cy="100"
-                                r="90"
-                                stroke={COLORS.surfaceBorder}
-                                strokeWidth="8"
-                                fill="none"
-                            />
-                            {/* Progress */}
-                            <Circle
-                                cx="100"
-                                cy="100"
-                                r="90"
-                                stroke={COLORS.primary}
-                                strokeWidth="8"
-                                fill="none"
-                                strokeDasharray="565"
-                                strokeDashoffset={565 - (565 * ringProgress)}
-                                strokeLinecap="round"
-                                rotation="-90"
-                                origin="100, 100"
-                            />
-                        </Svg>
-
-                        <View style={styles.ritualCenter}>
-                            {ringProgress >= 1 ? (
-                                <View style={styles.completedState}>
-                                    <AppText style={{ fontSize: 40 }}>✨</AppText>
-                                    <AppText variant="heading2" style={{ color: COLORS.primary }}>All Done!</AppText>
-                                </View>
-                            ) : (
-                                <TouchableOpacity
-                                    style={styles.ritualButton}
-                                    onPress={handleRitualComplete}
-                                    activeOpacity={0.8}
-                                >
-                                    {renderRitualContent()}
-                                    <View style={styles.startBadge}>
-                                        <AppText variant="buttonText" style={{ color: '#FFF' }}>Start Ritual</AppText>
-                                    </View>
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                {/* Top Bar Navigation */}
+                <View style={styles.topBar}>
+                    <TouchableOpacity style={styles.avatarPlaceholder}>
+                        <AppText style={styles.avatarText}>J</AppText>
+                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity style={styles.calendarIcon} onPress={() => navigation.navigate('Community')}>
+                            <AppText style={{ fontSize: 24 }}>💬</AppText>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.calendarIcon, { marginLeft: SPACING.sm }]}>
+                            <AppText style={{ fontSize: 24 }}>📅</AppText>
+                        </TouchableOpacity>
                     </View>
                 </View>
 
-                {/* The "Daily Gem" (Variable Reward) */}
-                {ringProgress >= 1 && (
-                    <View style={[styles.card, styles.gemCard]}>
-                        <AppText variant="caption" style={styles.gemTag}>ERIC, DID YOU KNOW?</AppText>
-                        <AppText variant="body" style={styles.insightText}>
-                            Your joint pain often spikes 24 hours after a low-activity day. Tomorrow is a great day for a light walk.
+                {/* Center Stage State */}
+                <View style={styles.centerStageContainer}>
+                    <View style={styles.stageCircle}>
+                        <AppText variant="heading2" style={styles.stageTitle}>Late Perimenopause</AppText>
+                        <AppText variant="caption" style={styles.stageSubtitle}>Cycle Day 14</AppText>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.logSymptomsButton}
+                        onPress={() => navigation.navigate('Logging')}
+                        activeOpacity={0.8}
+                    >
+                        <AppText variant="heading2" style={{ color: '#FFF' }}>Log Symptoms</AppText>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Daily Stories (Instagram Style) */}
+                <View style={styles.feedHeader}>
+                    <AppText variant="heading2">Daily Plan</AppText>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesWrapper} contentContainerStyle={styles.storiesContainer}>
+                    {renderStory('Nutrition', '#FFB6C1')}
+                    {renderStory('Mindfulness', '#87CEFA')}
+                    {renderStory('Sleep', '#DDA0DD')}
+                    {renderStory('Movement', '#98FB98')}
+                </ScrollView>
+
+                {/* Insight Cards */}
+                <View style={[styles.card, styles.insightCard]}>
+                    <AppText variant="heading2" style={styles.insightHeadline}>Why you feel tired today</AppText>
+                    <AppText variant="body" style={styles.insightText}>
+                        Your sleep data indicates waking up frequently between 3 AM and 4 AM, which correlates with your recent logs of Night Sweats.
+                    </AppText>
+                    <View style={styles.insightFooter}>
+                        <AppText variant="caption" style={styles.geminiTag}>AI Clinical Insight</AppText>
+                    </View>
+                </View>
+
+                <View style={[styles.card, styles.insightCard]}>
+                    <AppText variant="heading2" style={styles.insightHeadline}>Movement Goal</AppText>
+                    <AppText variant="body" style={styles.insightText}>
+                        A 15-minute walk can help regulate your temperature today.
+                    </AppText>
+                    <View style={styles.insightFooter}>
+                        <AppText variant="caption" style={styles.geminiTag}>Daily Tip</AppText>
+                    </View>
+                </View>
+
+                {/* Clinical Report Button */}
+                <TouchableOpacity
+                    style={[styles.logSymptomsButton, { backgroundColor: '#FFB6C1', marginTop: SPACING.md }]}
+                    onPress={() => navigation.navigate('HealthReport')}
+                    activeOpacity={0.8}
+                >
+                    <View style={styles.logSymptomsContent}>
+                        <AppText variant="heading2" style={{ color: COLORS.textMain }}>View Clinical Report</AppText>
+                        <AppText variant="caption" style={{ color: COLORS.textMain }}>
+                            Generate PDF for your doctor
                         </AppText>
-                        <AppText variant="caption" style={styles.geminiTag}>✨ Gemini Intelligence</AppText>
                     </View>
-                )}
+                </TouchableOpacity>
+
 
             </ScrollView>
         </View>
@@ -139,50 +137,101 @@ const styles = StyleSheet.create({
         paddingTop: 80,
         paddingBottom: 40,
     },
-    header: {
-        marginBottom: SPACING.xl,
-        alignItems: 'center',
-    },
-    resonanceContainer: {
+    topBar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: SPACING.xl,
-        marginTop: SPACING.md,
     },
-    ringWrapper: {
-        width: 260,
-        height: 260,
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-    },
-    ritualCenter: {
-        position: 'absolute',
-        width: 150,
-        height: 150,
-        borderRadius: 75,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    ritualButton: {
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    ritualPrompt: {
-        alignItems: 'center',
-        paddingHorizontal: SPACING.sm,
-    },
-    startBadge: {
-        marginTop: SPACING.md,
-        backgroundColor: COLORS.primary,
-        paddingHorizontal: SPACING.md,
-        paddingVertical: SPACING.sm,
+    avatarPlaceholder: {
+        width: 40,
+        height: 40,
         borderRadius: 20,
-    },
-    completedState: {
+        backgroundColor: '#FFB6C1', // Simple pink avatar
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    avatarText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
+    calendarIcon: {
+        padding: SPACING.xs,
+    },
+    centerStageContainer: {
+        alignItems: 'center',
+        marginBottom: SPACING.xl,
+    },
+    stageCircle: {
+        width: 240,
+        height: 240,
+        borderRadius: 120,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 8,
+        borderColor: 'rgba(255, 88, 100, 0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: -24, // Overlap with button
+        shadowColor: 'rgba(255, 88, 100, 0.15)',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 1,
+        shadowRadius: 20,
+        elevation: 8,
+        zIndex: 1,
+    },
+    stageTitle: {
+        color: COLORS.primary,
+        textAlign: 'center',
+        marginBottom: 4,
+    },
+    stageSubtitle: {
+        color: '#757575',
+    },
+    logSymptomsButton: {
+        backgroundColor: COLORS.primary,
+        paddingVertical: 16,
+        paddingHorizontal: 32,
+        borderRadius: 30,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
+        elevation: 6,
+        zIndex: 2,
+    },
+    feedHeader: {
+        marginBottom: SPACING.md,
+    },
+    storiesWrapper: {
+        marginBottom: SPACING.xl,
+        marginHorizontal: -SPACING.lg, // Bleed edge-to-edge
+    },
+    storiesContainer: {
+        paddingHorizontal: SPACING.lg,
+        gap: 16,
+    },
+    storyContainer: {
+        alignItems: 'center',
+        width: 70,
+    },
+    storyRing: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    storyImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+    },
+    storyTitle: {
+        textAlign: 'center',
+        color: '#4A4A4A',
     },
     card: {
         backgroundColor: COLORS.surface,
@@ -195,25 +244,29 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 4,
     },
-    gemCard: {
-        borderWidth: 2,
-        borderColor: 'rgba(255, 88, 100, 0.3)',
-        backgroundColor: '#FFF9FA',
+    insightCard: {
+        borderWidth: 1.5,
+        borderColor: '#E8E8E8',
+        backgroundColor: '#FFFFFF',
     },
-    gemTag: {
-        color: COLORS.primary,
-        fontWeight: '800',
+    insightHeadline: {
+        color: '#2D2D2D',
         marginBottom: SPACING.sm,
     },
     insightText: {
-        fontSize: 18,
-        lineHeight: 26,
-        color: COLORS.textMain,
+        fontSize: 16,
+        lineHeight: 24,
+        color: '#4A4A4A',
+        marginBottom: SPACING.md,
+    },
+    insightFooter: {
+        borderTopWidth: 1,
+        borderTopColor: '#F0F0F0',
+        paddingTop: SPACING.sm,
+        marginTop: SPACING.sm,
     },
     geminiTag: {
-        marginTop: SPACING.md,
-        color: '#8A8A9D',
+        color: COLORS.primary,
         fontWeight: '700',
-        alignSelf: 'flex-end',
-    },
+    }
 });

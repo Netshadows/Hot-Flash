@@ -29,23 +29,26 @@ export const OnboardingFrictionScreen = ({ navigation }) => {
                 <AppText variant="heading1" style={styles.title}>What feels heavy today?</AppText>
                 <AppText variant="body" style={styles.subtitle}>Select up to 3 to personalize your daily rituals.</AppText>
 
-                <View style={styles.grid}>
+                <View style={styles.list}>
                     {frictions.map((f, idx) => {
                         const isSelected = selected.includes(idx);
                         return (
                             <TouchableOpacity
                                 key={idx}
                                 style={[
-                                    styles.bubble,
-                                    isSelected && styles.bubbleSelected
+                                    styles.card,
+                                    isSelected && styles.cardSelected
                                 ]}
                                 onPress={() => toggleBubble(idx)}
                                 activeOpacity={0.8}
                             >
+                                <View style={[styles.radio, isSelected && styles.radioSelected]}>
+                                    {isSelected && <View style={styles.radioInner} />}
+                                </View>
                                 <AppText
                                     style={[
-                                        styles.bubbleText,
-                                        isSelected && styles.bubbleTextSelected
+                                        styles.cardText,
+                                        isSelected && styles.cardTextSelected
                                     ]}
                                 >
                                     {f}
@@ -88,41 +91,50 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.xl,
         marginTop: SPACING.sm,
     },
-    grid: {
+    list: {
+        flexDirection: 'column',
+        gap: 12,
+    },
+    card: {
+        width: '100%',
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        gap: 16,
-    },
-    bubble: {
-        width: '46%', // 2 columns roughly
-        aspectRatio: 1, // Make them square/circles
-        borderRadius: 100,
-        backgroundColor: COLORS.surface,
-        justifyContent: 'center',
         alignItems: 'center',
-        padding: SPACING.md,
-        shadowColor: COLORS.shadow,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 8,
-        elevation: 3,
-        borderWidth: 2,
-        borderColor: 'transparent',
+        padding: SPACING.lg,
+        backgroundColor: COLORS.surface,
+        borderRadius: 16,
+        borderWidth: 1.5,
+        borderColor: '#E8E8E8', // Soft gray border
     },
-    bubbleSelected: {
-        backgroundColor: 'rgba(255, 88, 100, 0.1)',
+    cardSelected: {
+        backgroundColor: 'rgba(255, 88, 100, 0.05)', // Very light pink fill
         borderColor: COLORS.primary,
     },
-    bubbleText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: COLORS.textMain,
-        textAlign: 'center',
+    radio: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#D1D1D1',
+        marginRight: SPACING.md,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    bubbleTextSelected: {
-        color: COLORS.primary,
-        fontWeight: '800',
+    radioSelected: {
+        borderColor: COLORS.primary,
+    },
+    radioInner: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: COLORS.primary,
+    },
+    cardText: {
+        fontSize: 17,
+        fontWeight: '500',
+        color: COLORS.textMain,
+    },
+    cardTextSelected: {
+        fontWeight: '700',
     },
     footer: {
         padding: SPACING.xl,
