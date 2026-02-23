@@ -79,7 +79,10 @@ export const DashboardScreen = ({ navigation }) => {
                         <TouchableOpacity style={styles.calendarIcon} onPress={() => navigation.navigate('Community')}>
                             <AppText style={{ fontSize: 24 }}>💬</AppText>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.calendarIcon, { marginLeft: SPACING.sm }]}>
+                        <TouchableOpacity
+                            style={[styles.calendarIcon, { marginLeft: SPACING.sm }]}
+                            onPress={() => navigation.navigate('Calendar')}
+                        >
                             <AppText style={{ fontSize: 24 }}>📅</AppText>
                         </TouchableOpacity>
                     </View>
@@ -93,10 +96,10 @@ export const DashboardScreen = ({ navigation }) => {
                     </View>
                     <TouchableOpacity
                         style={styles.logSymptomsButton}
-                        onPress={() => navigation.navigate('Logging')}
+                        onPress={() => navigation.navigate('DailyPulse')}
                         activeOpacity={0.8}
                     >
-                        <AppText variant="heading2" style={{ color: '#FFF' }}>Log Symptoms</AppText>
+                        <AppText variant="heading2" style={{ color: '#FFF' }}>Daily Pulse</AppText>
                     </TouchableOpacity>
                 </View>
 

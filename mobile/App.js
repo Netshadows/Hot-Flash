@@ -17,6 +17,8 @@ import { CommunityScreen } from './src/screens/CommunityScreen';
 import { QuizzesScreen } from './src/screens/QuizzesScreen';
 import { QuizFlowScreen } from './src/screens/QuizFlowScreen';
 import { DailyActivityScreen } from './src/screens/DailyActivityScreen';
+import { DailyPulseScreen } from './src/screens/DailyPulseScreen';
+import { CalendarScreen } from './src/screens/CalendarScreen';
 import { COLORS } from './src/constants/theme';
 
 const Stack = createNativeStackNavigator();
@@ -53,6 +55,8 @@ export default function App() {
                 <Stack.Screen name="Quizzes" component={QuizzesScreen} />
                 <Stack.Screen name="QuizFlow" component={QuizFlowScreen} />
                 <Stack.Screen name="DailyActivity" component={DailyActivityScreen} />
+                <Stack.Screen name="DailyPulse" component={DailyPulseScreen} options={{ presentation: 'modal' }} />
+                <Stack.Screen name="Calendar" component={CalendarScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

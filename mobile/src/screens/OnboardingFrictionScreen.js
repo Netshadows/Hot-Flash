@@ -5,41 +5,43 @@ import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 
 export const OnboardingFrictionScreen = ({ navigation }) => {
-    const frictions = [
-        'Hot Flashes', 'Brain Fog', 'Joint Pain',
-        'Mood Swings', 'Sleep Loss', 'Low Energy'
+    const goalsAndFrictions = [
+        { id: 'energy', label: 'More Energy', type: 'positive' },
+        { id: 'sleep', label: 'Better Sleep', type: 'positive' },
+        { id: 'clarity', label: 'Mental Clarity', type: 'positive' },
+        { id: 'hot_flashes', label: 'Manage Hot Flashes', type: 'symptom' },
+        { id: 'joint_pain', label: 'Reduce Joint Pain', type: 'symptom' },
+        { id: 'mood', label: 'Balance Mood', type: 'symptom' }
     ];
 
-    // Track selected indices
     const [selected, setSelected] = useState([]);
 
-    const toggleBubble = (idx) => {
-        if (selected.includes(idx)) {
-            setSelected(selected.filter(i => i !== idx));
+    const toggleItem = (id) => {
+        if (selected.includes(id)) {
+            setSelected(selected.filter(i => i !== id));
         } else {
-            if (selected.length < 3) {
-                setSelected([...selected, idx]);
-            }
+            setSelected([...selected, id]);
         }
     };
 
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={styles.content}>
-                <AppText variant="heading1" style={styles.title}>What feels heavy today?</AppText>
-                <AppText variant="body" style={styles.subtitle}>Select up to 3 to personalize your daily rituals.</AppText>
+                <AppText variant="heading1" style={styles.title}>What are your goals?</AppText>
+                <AppText variant="body" style={styles.subtitle}>Select the areas you'd like to focus on for your daily rituals.</AppText>
 
                 <View style={styles.list}>
-                    {frictions.map((f, idx) => {
-                        const isSelected = selected.includes(idx);
+                    {goalsAndFrictions.map((item) => {
+                        const isSelected = selected.includes(item.id);
                         return (
                             <TouchableOpacity
-                                key={idx}
+                                key={item.id}
                                 style={[
                                     styles.card,
-                                    isSelected && styles.cardSelected
+                                    isSelected && styles.cardSelected,
+                                    item.type === 'positive' && isSelected && styles.cardPositiveSelected
                                 ]}
-                                onPress={() => toggleBubble(idx)}
+                                onPress={() => toggleItem(item.id)}
                                 activeOpacity={0.8}
                             >
                                 <View style={[styles.radio, isSelected && styles.radioSelected]}>
@@ -51,7 +53,7 @@ export const OnboardingFrictionScreen = ({ navigation }) => {
                                         isSelected && styles.cardTextSelected
                                     ]}
                                 >
-                                    {f}
+                                    {item.label}
                                 </AppText>
                             </TouchableOpacity>
                         );
@@ -60,16 +62,12 @@ export const OnboardingFrictionScreen = ({ navigation }) => {
             </ScrollView>
 
             <View style={styles.footer}>
-                {selected.length === 3 ? (
-                    <Button
-                        title="Finish Setup"
-                        onPress={() => navigation.navigate('MainTabs')}
-                    />
-                ) : (
-                    <AppText style={styles.instruction}>
-                        Select {3 - selected.length} more.
-                    </AppText>
-                )}
+                <Button
+                    title="Finish Setup"
+                    onPress={() => navigation.navigate('MainTabs')}
+                    disabled={selected.length === 0}
+                    style={{ opacity: selected.length === 0 ? 0.5 : 1 }}
+                />
             </View>
         </View>
     );
@@ -92,22 +90,29 @@ const styles = StyleSheet.create({
         marginTop: SPACING.sm,
     },
     list: {
-        flexDirection: 'column',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: 12,
+        justifyContent: 'space-between'
     },
     card: {
-        width: '100%',
-        flexDirection: 'row',
+        width: '48%',
+        flexDirection: 'column',
         alignItems: 'center',
         padding: SPACING.lg,
         backgroundColor: COLORS.surface,
         borderRadius: 16,
         borderWidth: 1.5,
-        borderColor: '#E8E8E8', // Soft gray border
+        borderColor: '#E8E8E8',
+        marginBottom: SPACING.sm,
     },
     cardSelected: {
-        backgroundColor: 'rgba(255, 88, 100, 0.05)', // Very light pink fill
+        backgroundColor: 'rgba(255, 88, 100, 0.05)',
         borderColor: COLORS.primary,
+    },
+    cardPositiveSelected: {
+        backgroundColor: 'rgba(76, 175, 80, 0.05)',
+        borderColor: '#4CAF50',
     },
     radio: {
         width: 24,
@@ -115,7 +120,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 2,
         borderColor: '#D1D1D1',
-        marginRight: SPACING.md,
+        marginBottom: SPACING.md,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -129,9 +134,10 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primary,
     },
     cardText: {
-        fontSize: 17,
+        fontSize: 15,
         fontWeight: '500',
         color: COLORS.textMain,
+        textAlign: 'center'
     },
     cardTextSelected: {
         fontWeight: '700',
@@ -139,13 +145,5 @@ const styles = StyleSheet.create({
     footer: {
         padding: SPACING.xl,
         paddingBottom: 60,
-        minHeight: 120,
-        justifyContent: 'center',
-    },
-    instruction: {
-        textAlign: 'center',
-        color: COLORS.textMuted,
-        fontWeight: '600',
-        fontSize: 16,
     }
 });
