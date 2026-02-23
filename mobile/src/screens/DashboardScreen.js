@@ -121,6 +121,20 @@ export const DashboardScreen = ({ navigation }) => {
                     </View>
                 </TouchableOpacity>
 
+                {/* Quizzes Button */}
+                <TouchableOpacity
+                    style={[styles.card, { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F8FF', marginTop: SPACING.md }]}
+                    onPress={() => navigation.navigate('Quizzes')}
+                    activeOpacity={0.8}
+                >
+                    <View style={[styles.storyRing, { borderColor: '#87CEFA', marginRight: SPACING.md, marginBottom: 0 }]}>
+                        <AppText style={{ fontSize: 32 }}>📋</AppText>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <AppText variant="heading2" style={{ color: '#2D2D2D' }}>Health Quizzes</AppText>
+                        <AppText variant="caption" style={{ color: '#4A4A4A' }}>Test your knowledge and get personalized insights.</AppText>
+                    </View>
+                </TouchableOpacity>
 
             </ScrollView>
         </View>

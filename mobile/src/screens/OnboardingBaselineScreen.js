@@ -6,9 +6,11 @@ import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { Picker } from '@react-native-picker/picker'; // We will need to add this dependency, or use standard RN components if not available
 
 export const OnboardingBaselineScreen = ({ navigation, route }) => {
-    // Scaffold UI for now
+    const [lastPeriod, setLastPeriod] = useState('just_finished');
+    const [age, setAge] = useState(35);
+
     const handleNext = () => {
-        navigation.navigate('OnboardingSymptomGrid'); // the next screen in the plan
+        navigation.navigate('OnboardingSymptomGrid');
     }
 
     return (
@@ -18,17 +20,32 @@ export const OnboardingBaselineScreen = ({ navigation, route }) => {
             <AppText variant="body" style={styles.prompt}>
                 When was your last period?
             </AppText>
-            {/* Placeholder for Wheel Picker */}
-            <View style={styles.pickerPlaceholder}>
-                <AppText variant="caption">[ Date Picker Widget ]</AppText>
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={lastPeriod}
+                    onValueChange={(itemValue) => setLastPeriod(itemValue)}
+                    style={styles.picker}
+                >
+                    <Picker.Item label="Just finished" value="just_finished" />
+                    <Picker.Item label="A week ago" value="week_ago" />
+                    <Picker.Item label="A month ago" value="month_ago" />
+                    <Picker.Item label="Not sure / Irregular" value="irregular" />
+                </Picker>
             </View>
 
             <AppText variant="body" style={styles.prompt}>
                 How old are you?
             </AppText>
-            {/* Placeholder for Wheel Picker */}
-            <View style={styles.pickerPlaceholder}>
-                <AppText variant="caption">[ Age Picker Widget ]</AppText>
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={age}
+                    onValueChange={(itemValue) => setAge(itemValue)}
+                    style={styles.picker}
+                >
+                    {Array.from({ length: 60 }, (_, i) => i + 18).map(a => (
+                        <Picker.Item key={a} label={`${a} years`} value={a} />
+                    ))}
+                </Picker>
             </View>
 
             <Button
@@ -58,16 +75,15 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.sm,
         color: '#4A4A4A'
     },
-    pickerPlaceholder: {
-        height: 150,
+    pickerContainer: {
         backgroundColor: '#F5F5F5',
         borderRadius: RADIUS.md,
-        alignItems: 'center',
-        justifyContent: 'center',
         marginBottom: SPACING.xl,
-        borderWidth: 1,
-        borderColor: '#E8E8E8',
-        borderStyle: 'dashed',
+        overflow: 'hidden',
+    },
+    picker: {
+        width: '100%',
+        height: 150,
     },
     nextButton: {
         marginTop: SPACING.md,

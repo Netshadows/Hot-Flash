@@ -14,6 +14,7 @@ import { DashboardScreen } from './src/screens/DashboardScreen';
 import { LoggingScreen } from './src/screens/LoggingScreen';
 import { HealthReportScreen } from './src/screens/HealthReportScreen';
 import { CommunityScreen } from './src/screens/CommunityScreen';
+import { QuizzesScreen } from './src/screens/QuizzesScreen';
 import { COLORS } from './src/constants/theme';
 
 const Stack = createNativeStackNavigator();
@@ -47,6 +48,7 @@ export default function App() {
 
                 <Stack.Screen name="HealthReport" component={HealthReportScreen} />
                 <Stack.Screen name="Community" component={CommunityScreen} />
+                <Stack.Screen name="Quizzes" component={QuizzesScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );
