@@ -72,7 +72,7 @@ export const QuizFlowScreen = ({ navigation, route }) => {
                     <AppText style={styles.backButtonText}>← Exit</AppText>
                 </TouchableOpacity>
                 <AppText variant="heading2" style={{ flex: 1, textAlign: 'center' }}>{currentIndex + 1} of {quiz.questions.length}</AppText>
-                <View style={{ width: 40 }} /> {/* Spacer */}
+                <View style={{ width: 40 }} />
             </View>
 
             {/* Progress Bar */}

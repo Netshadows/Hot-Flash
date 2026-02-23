@@ -46,7 +46,7 @@ export const QuizzesScreen = ({ navigation }) => {
                     <AppText style={styles.backButtonText}>← Back</AppText>
                 </TouchableOpacity>
                 <AppText variant="heading1">Health Quizzes</AppText>
-                <View style={{ width: 40 }} /> {/* Spacer */}
+                <View style={{ width: 40 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>

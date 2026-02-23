@@ -38,7 +38,7 @@ export const DailyActivityScreen = ({ navigation, route }) => {
                 <AppText variant="heading2" style={{ flex: 1, textAlign: 'center', color: activity.color }}>
                     {activity.title}
                 </AppText>
-                <View style={{ width: 60 }} /> {/* Spacer */}
+                <View style={{ width: 60 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
