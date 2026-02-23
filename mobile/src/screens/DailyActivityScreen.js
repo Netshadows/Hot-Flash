@@ -9,7 +9,85 @@ export const DailyActivityScreen = ({ navigation, route }) => {
     const { activity } = route.params;
     const [isCompleted, setIsCompleted] = useState(activity.completed);
 
-    // Simple pulse animation for "dopamine hit"
+    const [quizAnswered, setQuizAnswered] = useState(false);
+    const [quizCorrect, setQuizCorrect] = useState(null);
+
+    // Mock NotebookLM Fact Data for Gamification
+    const MINIGAME_DATA = {
+        '1': {
+            tip: "Nutrition Insight: High-fiber foods like ground flaxseed and legumes contain lignans, which have shown mild estrogenic effects and can help smooth out hormone fluctuations during perimenopause."
+        },
+        '2': {
+            tip: "Mindfulness Action: When a hot flash starts, practice ' paced respiration' (inhale for 5 seconds, exhale for 5 seconds). Clinical studies in NotebookLM show this reduces subjective distress by up to 40%."
+        },
+        '3': { // Mini-Quiz
+            question: "Which hormone's decline is primarily responsible for the onset of vasomotor symptoms (hot flashes)?",
+            options: ["Progesterone", "Cortisol", "Estrogen", "Testosterone"],
+            correctAnswer: 2,
+            explanation: "Correct! The drop in circulating estrogen narrows the brain's thermoregulatory zone, making you highly sensitive to tiny temperature changes."
+        },
+        '4': {
+            tip: "Movement Tip: Weight-bearing exercises (like brisk walking or light resistance training) are critical right now. They signal to your body to maintain bone density, which rapidly declines post-menopause."
+        }
+    };
+
+    const gameData = MINIGAME_DATA[activity.id] || { tip: activity.description };
+
+    const handleQuizOption = (index) => {
+        setQuizAnswered(true);
+        if (index === gameData.correctAnswer) {
+            setQuizCorrect(true);
+        } else {
+            setQuizCorrect(false);
+        }
+    };
+
+    const renderQuiz = () => (
+        <View style={styles.quizContainer}>
+            <AppText variant="heading2" style={styles.quizQuestion}>{gameData.question}</AppText>
+            {gameData.options.map((opt, idx) => {
+                let btnStyle = styles.quizOption;
+                let textStyle = styles.quizOptionText;
+
+                if (quizAnswered) {
+                    if (idx === gameData.correctAnswer) {
+                        btnStyle = [styles.quizOption, styles.quizCorrect];
+                        textStyle = [styles.quizOptionText, styles.quizCorrectText];
+                    } else if (!quizCorrect) {
+                        btnStyle = [styles.quizOption, styles.quizWrong];
+                    }
+                }
+
+                return (
+                    <TouchableOpacity
+                        key={idx}
+                        style={btnStyle}
+                        disabled={quizAnswered}
+                        onPress={() => handleQuizOption(idx)}
+                    >
+                        <AppText style={textStyle}>{opt}</AppText>
+                    </TouchableOpacity>
+                );
+            })}
+            {quizAnswered && (
+                <View style={styles.lessonBlock}>
+                    <AppText variant="body" style={styles.lessonText}>
+                        <AppText style={{ fontWeight: 'bold' }}>NotebookLM Insight: </AppText>
+                        {gameData.explanation}
+                    </AppText>
+                </View>
+            )}
+        </View>
+    );
+
+    const renderTip = () => (
+        <View style={styles.lessonBlock}>
+            <AppText variant="body" style={styles.lessonText}>
+                <AppText style={{ fontWeight: 'bold' }}>NotebookLM Insight: </AppText>
+                {gameData.tip}
+            </AppText>
+        </View>
+    );
     const pulseAnim = new Animated.Value(1);
 
     useEffect(() => {
@@ -58,14 +136,7 @@ export const DailyActivityScreen = ({ navigation, route }) => {
                     {activity.description}
                 </AppText>
 
-                {/* Simulated Content Block */}
-                <View style={styles.lessonBlock}>
-                    <AppText variant="body" style={styles.lessonText}>
-                        <AppText style={{ fontWeight: 'bold' }}>Tip: </AppText>
-                        Even small, consistent changes build massive resilience over your lifecycle.
-                        Completing these micro-habits grants you Health XP and extends your daily streak!
-                    </AppText>
-                </View>
+                {activity.id === '3' ? renderQuiz() : renderTip()}
 
             </ScrollView>
 
@@ -167,5 +238,40 @@ const styles = StyleSheet.create({
     },
     successText: {
         color: '#2E8B57', // Sea green
+    },
+    quizContainer: {
+        width: '100%',
+        marginTop: SPACING.md,
+    },
+    quizQuestion: {
+        textAlign: 'center',
+        marginBottom: SPACING.xl,
+        color: '#333',
+    },
+    quizOption: {
+        backgroundColor: '#FFFFFF',
+        padding: SPACING.lg,
+        borderRadius: RADIUS.md,
+        borderWidth: 2,
+        borderColor: '#E8E8E8',
+        marginBottom: SPACING.md,
+    },
+    quizOptionText: {
+        textAlign: 'center',
+        color: '#555',
+        fontWeight: '500',
+    },
+    quizCorrect: {
+        borderColor: '#4CAF50',
+        backgroundColor: '#E8F5E9',
+    },
+    quizCorrectText: {
+        color: '#2E7D32',
+        fontWeight: '700',
+    },
+    quizWrong: {
+        borderColor: '#F44336',
+        backgroundColor: '#FFEBEE',
+        opacity: 0.6,
     }
 });
