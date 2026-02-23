@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
@@ -12,28 +12,38 @@ export const DailyPulseScreen = ({ navigation }) => {
                 { id: 'mental_clarity', label: 'Mental Clarity' },
                 { id: 'high_energy', label: 'High Energy' },
                 { id: 'deep_rest', label: 'Deep Rest' },
-                { id: 'feeling_balanced', label: 'Feeling Balanced' }
+                { id: 'feeling_balanced', label: 'Feeling Balanced' },
+                { id: 'motivated', label: 'Motivated' },
+                { id: 'calm', label: 'Calm & Grounded' }
             ]
         },
         {
             title: "Symptoms",
             items: [
                 { id: 'hot_flash', label: 'Hot Flashes' },
+                { id: 'night_sweats', label: 'Night Sweats' },
                 { id: 'brain_fog', label: 'Brain Fog' },
-                { id: 'joint_pain', label: 'Joint Pain' }
+                { id: 'joint_pain', label: 'Joint Pain' },
+                { id: 'mood_swings', label: 'Mood Swings' },
+                { id: 'headaches', label: 'Headaches' },
+                { id: 'low_libido', label: 'Low Libido' }
             ]
         },
         {
-            title: "Lifestyle",
+            title: "Lifestyle Elements",
             items: [
                 { id: 'caffeine', label: 'Caffeine Intake' },
-                { id: 'hydration', label: 'Hydration' },
-                { id: 'exercise', label: 'Exercise' }
+                { id: 'alcohol', label: 'Alcohol Intake' },
+                { id: 'hydration', label: 'Good Hydration' },
+                { id: 'exercise', label: 'Exercise/Movement' },
+                { id: 'high_stress', label: 'High Stress' },
+                { id: 'supplements', label: 'Took Supplements' }
             ]
         }
     ];
 
     const [selectedItems, setSelectedItems] = useState([]);
+    const [notes, setNotes] = useState('');
 
     const toggleItem = (id) => {
         if (selectedItems.includes(id)) {
@@ -44,15 +54,15 @@ export const DailyPulseScreen = ({ navigation }) => {
     };
 
     const handleSave = () => {
-        console.log("Saving Daily Pulse Data:", selectedItems);
+        console.log("Saving Daily Pulse Data:", { items: selectedItems, notes });
         navigation.goBack();
     };
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.content}>
+            <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                 <AppText variant="heading1" style={styles.header}>Daily Pulse</AppText>
-                <AppText variant="body" style={styles.subHeader}>Log your overarching holistic metrics for today.</AppText>
+                <AppText variant="body" style={styles.subHeader}>Log your overarching holistic metrics and triggers for today to gather more intel on your trajectory.</AppText>
 
                 {categories.map((category) => (
                     <View key={category.title} style={styles.section}>
@@ -75,6 +85,21 @@ export const DailyPulseScreen = ({ navigation }) => {
                         </View>
                     </View>
                 ))}
+
+                <View style={styles.section}>
+                    <AppText variant="heading2" style={styles.sectionTitle}>Any additional context?</AppText>
+                    <TextInput
+                        style={styles.textInput}
+                        multiline
+                        numberOfLines={4}
+                        placeholder="Log any unstructured thoughts, triggers, or severity notes here for the AI to analyze..."
+                        placeholderTextColor={COLORS.textMuted}
+                        value={notes}
+                        onChangeText={setNotes}
+                        textAlignVertical="top"
+                    />
+                </View>
+
             </ScrollView>
 
             <View style={styles.footer}>
@@ -106,5 +131,15 @@ const styles = StyleSheet.create({
     },
     pillText: { fontSize: 15, color: COLORS.textMain, fontWeight: '500' },
     pillTextSelected: { color: COLORS.surface, fontWeight: '700' },
+    textInput: {
+        backgroundColor: COLORS.surface,
+        borderWidth: 1.5,
+        borderColor: '#E8E8E8',
+        borderRadius: RADIUS.md,
+        padding: SPACING.md,
+        fontSize: 16,
+        color: COLORS.textMain,
+        minHeight: 120,
+    },
     footer: { padding: SPACING.xl, paddingBottom: 40, borderTopWidth: 1, borderTopColor: '#E8E8E8', backgroundColor: COLORS.background }
 });
