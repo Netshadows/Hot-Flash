@@ -6,6 +6,7 @@ import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { Svg, Circle } from 'react-native-svg';
 import { HealthKitService } from '../services/HealthKitService';
 import { DataStreamType } from '../models/DeviceData';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -29,10 +30,10 @@ export const DashboardScreen = ({ navigation }) => {
     }, []);
 
     const DAILY_ACTIVITIES = [
-        { id: '1', title: 'Nutrition', color: '#FFB6C1', icon: '🥗', completed: false, description: 'Learn 3 foods that can help balance estrogen levels.' },
-        { id: '2', title: 'Mindfulness', color: '#87CEFA', icon: '🧘‍♀️', completed: true, description: 'A 2-minute breathing exercise to lower cortisol.' },
-        { id: '3', title: 'Mini-Quiz', color: '#DDA0DD', icon: '🎮', completed: false, description: 'Test your knowledge to earn today\'s points!' },
-        { id: '4', title: 'Movement', color: '#98FB98', icon: '🚶‍♀️', completed: false, description: 'A quick 5-minute stretch routine for joint stiffness.' },
+        { id: '1', title: 'Nutrition', color: '#FF7F50', icon: 'nutrition-outline', completed: false, description: 'Learn 3 foods that can help balance estrogen levels.' },
+        { id: '2', title: 'Mindfulness', color: '#87CEFA', icon: 'leaf-outline', completed: true, description: 'A 2-minute breathing exercise to lower cortisol.' },
+        { id: '3', title: 'Check-In', color: '#DDA0DD', icon: 'clipboard-outline', completed: false, description: 'Log your symptoms to refine your clinical baseline.' },
+        { id: '4', title: 'Movement', color: '#48D1CC', icon: 'fitness-outline', completed: false, description: 'A quick 5-minute stretch routine for joint stiffness.' },
     ];
 
     const renderStory = (activity) => (
@@ -44,9 +45,11 @@ export const DashboardScreen = ({ navigation }) => {
         >
             <View style={[styles.storyRing, { borderColor: activity.completed ? '#E0E0E0' : activity.color }]}>
                 <View style={[styles.storyImage, { backgroundColor: activity.completed ? '#F5F5F5' : activity.color }]}>
-                    <AppText style={{ fontSize: 28, opacity: activity.completed ? 0.3 : 1 }}>
-                        {activity.completed ? '✔️' : activity.icon}
-                    </AppText>
+                    {activity.completed ? (
+                        <Ionicons name="checkmark-circle" size={32} color="#999" />
+                    ) : (
+                        <Ionicons name={activity.icon} size={32} color="#FFF" />
+                    )}
                 </View>
             </View>
             <AppText variant="caption" style={[styles.storyTitle, activity.completed && { color: '#999' }]}>
@@ -259,6 +262,8 @@ const styles = StyleSheet.create({
     storiesContainer: {
         paddingHorizontal: SPACING.lg,
         gap: 16,
+        justifyContent: 'center',
+        flexGrow: 1,
     },
     storyContainer: {
         alignItems: 'center',

@@ -4,6 +4,8 @@ import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { saveDailyActivity } from '../services/firebase';
 
 export const DailyActivityScreen = ({ route, navigation }) => {
     // Requires a route param: { activity: { title, color, icon, description, completed } }
@@ -16,6 +18,9 @@ export const DailyActivityScreen = ({ route, navigation }) => {
     const handleComplete = () => {
         setIsComplete(true);
         activity.completed = true; // Mutating mock data for demo visual sync
+
+        // Record to database
+        saveDailyActivity(activity.id);
 
         // Dopamine sequence
         Animated.parallel([
@@ -39,7 +44,7 @@ export const DailyActivityScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
 
                 <View style={[styles.iconContainer, { backgroundColor: activity.color }]}>
-                    <AppText style={styles.icon}>{activity.icon}</AppText>
+                    <Ionicons name={activity.icon} size={50} color="#FFF" />
                 </View>
 
                 <AppText variant="heading1" style={styles.title}>{activity.title}</AppText>

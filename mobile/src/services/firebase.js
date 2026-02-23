@@ -4,7 +4,7 @@
 // We are using Expo Go / Web compatible config as requested.
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 // Replace these values with your actual Firebase project configuration found in the Firebase Console
 const firebaseConfig = {
@@ -32,4 +32,24 @@ export const generateMedicalReport = async (userId) => {
         success: true,
         reportUrl: "https://example.com/mock-pdf-url.pdf"
     };
+};
+
+export const saveDailyActivity = async (activityId) => {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            console.log("[Firebase Stub] Anonymous Auth - Activity Complete: ", activityId);
+            return { success: true, stub: true }; 
+        }
+
+        const docRef = await addDoc(collection(db, 'users', user.uid, 'activities'), {
+            activityId,
+            completedAt: serverTimestamp(),
+        });
+        console.log("Activity logged to Database with ID: ", docRef.id);
+        return { success: true, id: docRef.id };
+    } catch (e) {
+        console.error("Error adding document: ", e);
+        return { success: false, error: e };
+    }
 };
