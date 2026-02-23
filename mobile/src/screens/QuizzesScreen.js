@@ -59,10 +59,7 @@ export const QuizzesScreen = ({ navigation }) => {
                         key={quiz.id}
                         style={styles.quizCard}
                         activeOpacity={0.8}
-                        onPress={() => {
-                            // In a real app, this would navigate to a QuizFlowScreen
-                            alert(`Starting ${quiz.title}`);
-                        }}
+                        onPress={() => navigation.navigate('QuizFlow', { quizId: quiz.id })}
                     >
                         <View style={[styles.iconContainer, { backgroundColor: quiz.color }]}>
                             <AppText style={styles.quizIcon}>{quiz.icon}</AppText>
