@@ -3,7 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
-// Onboarding
+// Onboarding & Auth
+import { LoginScreen } from './src/screens/LoginScreen';
 import { OnboardingGoalScreen } from './src/screens/OnboardingGoalScreen';
 import { OnboardingBaselineScreen } from './src/screens/OnboardingBaselineScreen';
 import { OnboardingSymptomGridScreen } from './src/screens/OnboardingSymptomGridScreen';
@@ -33,9 +34,10 @@ export default function App() {
                     contentStyle: { backgroundColor: COLORS.background },
                     animation: 'slide_from_right',
                 }}
-                initialRouteName="OnboardingGoal"
+                initialRouteName="Login"
             >
-                {/* Onboarding Flow */}
+                {/* Onboarding Flow & Auth */}
+                <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="OnboardingGoal" component={OnboardingGoalScreen} />
                 <Stack.Screen name="OnboardingBaseline" component={OnboardingBaselineScreen} />
                 <Stack.Screen name="OnboardingSymptomGrid" component={OnboardingSymptomGridScreen} />
