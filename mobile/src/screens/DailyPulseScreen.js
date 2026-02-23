@@ -1,8 +1,38 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Animated, Keyboard } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
+
+const AnimatedPill = ({ item, isSelected, onPress }) => {
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+
+    // Animate bounce when selection toggles
+    useEffect(() => {
+        if (isSelected) {
+            Animated.sequence([
+                Animated.timing(scaleAnim, { toValue: 1.15, duration: 80, useNativeDriver: true }),
+                Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 150, useNativeDriver: true })
+            ]).start();
+        } else {
+            Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }).start();
+        }
+    }, [isSelected]);
+
+    return (
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <TouchableOpacity
+                onPress={onPress}
+                activeOpacity={0.8}
+                style={[styles.pill, isSelected && styles.pillSelected]}
+            >
+                <AppText style={[styles.pillText, isSelected && styles.pillTextSelected]}>
+                    {item.label}
+                </AppText>
+            </TouchableOpacity>
+        </Animated.View>
+    );
+};
 
 export const DailyPulseScreen = ({ navigation }) => {
     const categories = [
@@ -44,6 +74,10 @@ export const DailyPulseScreen = ({ navigation }) => {
 
     const [selectedItems, setSelectedItems] = useState([]);
     const [notes, setNotes] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const saveScale = useRef(new Animated.Value(0)).current;
+    const saveOpacity = useRef(new Animated.Value(0)).current;
 
     const toggleItem = (id) => {
         if (selectedItems.includes(id)) {
@@ -54,8 +88,29 @@ export const DailyPulseScreen = ({ navigation }) => {
     };
 
     const handleSave = () => {
-        console.log("Saving Daily Pulse Data:", { items: selectedItems, notes });
-        navigation.goBack();
+        Keyboard.dismiss();
+        setIsSaving(true);
+
+        // Dopamine "Level Up" Animation Sequence
+        Animated.parallel([
+            Animated.timing(saveOpacity, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true
+            }),
+            Animated.spring(saveScale, {
+                toValue: 1,
+                friction: 5,
+                tension: 60,
+                delay: 100,
+                useNativeDriver: true
+            })
+        ]).start();
+
+        // Navigate back after delay
+        setTimeout(() => {
+            navigation.goBack();
+        }, 1800);
     };
 
     return (
@@ -71,15 +126,12 @@ export const DailyPulseScreen = ({ navigation }) => {
                             {category.items.map((item) => {
                                 const isSelected = selectedItems.includes(item.id);
                                 return (
-                                    <TouchableOpacity
+                                    <AnimatedPill
                                         key={item.id}
+                                        item={item}
+                                        isSelected={isSelected}
                                         onPress={() => toggleItem(item.id)}
-                                        style={[styles.pill, isSelected && styles.pillSelected]}
-                                    >
-                                        <AppText style={[styles.pillText, isSelected && styles.pillTextSelected]}>
-                                            {item.label}
-                                        </AppText>
-                                    </TouchableOpacity>
+                                    />
                                 );
                             })}
                         </View>
@@ -103,8 +155,27 @@ export const DailyPulseScreen = ({ navigation }) => {
             </ScrollView>
 
             <View style={styles.footer}>
-                <Button title="Save Log" onPress={handleSave} />
+                <Button title="Save Log" onPress={handleSave} disabled={isSaving} />
             </View>
+
+            {/* Dopamine Celebration Overlay */}
+            {isSaving && (
+                <Animated.View style={[StyleSheet.absoluteFill, styles.rewardOverlay, { opacity: saveOpacity }]}>
+                    <Animated.View style={{ transform: [{ scale: saveScale }], alignItems: 'center' }}>
+                        <AppText style={{ fontSize: 80, marginBottom: 20 }}>🎉</AppText>
+                        <AppText variant="heading1" style={{ color: COLORS.primary, textAlign: 'center' }}>Pulse Logged!</AppText>
+
+                        <View style={styles.gemBadge}>
+                            <AppText style={{ fontSize: 24, marginRight: 8 }}>💎</AppText>
+                            <AppText variant="heading2" style={{ color: '#FFB300' }}>+10 Gems</AppText>
+                        </View>
+
+                        <AppText variant="body" style={{ color: '#4A4A4A', marginTop: 24, textAlign: 'center' }}>
+                            You're building an incredible daily ritual.
+                        </AppText>
+                    </Animated.View>
+                </Animated.View>
+            )}
         </View>
     );
 };
@@ -128,6 +199,11 @@ const styles = StyleSheet.create({
     pillSelected: {
         backgroundColor: COLORS.primary,
         borderColor: COLORS.primary,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 4,
     },
     pillText: { fontSize: 15, color: COLORS.textMain, fontWeight: '500' },
     pillTextSelected: { color: COLORS.surface, fontWeight: '700' },
@@ -141,5 +217,23 @@ const styles = StyleSheet.create({
         color: COLORS.textMain,
         minHeight: 120,
     },
-    footer: { padding: SPACING.xl, paddingBottom: 40, borderTopWidth: 1, borderTopColor: '#E8E8E8', backgroundColor: COLORS.background }
+    footer: { padding: SPACING.xl, paddingBottom: 40, borderTopWidth: 1, borderTopColor: '#E8E8E8', backgroundColor: COLORS.background },
+    rewardOverlay: {
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 999,
+        padding: SPACING.xl,
+    },
+    gemBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFF8E1',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 30,
+        borderWidth: 2,
+        borderColor: '#FFE082',
+        marginTop: SPACING.lg,
+    }
 });
