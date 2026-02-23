@@ -16,7 +16,7 @@ export const WelcomeScreen = ({ navigation }) => {
             <View style={styles.content}>
                 <View style={styles.logoContainer}>
                     <View style={styles.logoCircle} />
-                    <AppText variant="heading1" style={styles.title}>MenoCycle</AppText>
+                    <AppText variant="heading1" style={styles.title}>Lumina</AppText>
                     <AppText variant="body" style={styles.subtitle}>Your lifecycle, understood.</AppText>
                 </View>
 

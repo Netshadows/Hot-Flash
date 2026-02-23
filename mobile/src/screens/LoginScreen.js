@@ -24,7 +24,7 @@ export const LoginScreen = ({ navigation }) => {
                     <View style={styles.logoContainer}>
                         <AppText style={styles.logoIcon}>✨</AppText>
                     </View>
-                    <AppText variant="heading1" style={styles.title}>MenoCycle</AppText>
+                    <AppText variant="heading1" style={styles.title}>Lumina</AppText>
                     <AppText variant="body" style={styles.subtitle}>
                         Evidence-based support for your transition.
                     </AppText>
@@ -76,7 +76,7 @@ export const LoginScreen = ({ navigation }) => {
             <View style={styles.footer}>
                 <AppText variant="caption" style={styles.disclaimer}>
                     By continuing, you agree to our Terms of Service & Privacy Policy.
-                    MenoCycle does not provide medical advice.
+                    Lumina does not provide medical advice.
                 </AppText>
             </View>
         </View>

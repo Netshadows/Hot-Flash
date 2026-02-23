@@ -13,7 +13,7 @@ export const OnboardingHealthScreen = ({ navigation }) => {
 
                 <AppText variant="heading1" style={styles.title}>Rest is data.</AppText>
                 <AppText variant="body" style={styles.body}>
-                    MenoCycle works in the background to see how your body heals while you sleep. We sync with Apple Health to track heart rate and sleep patterns automatically.
+                    Lumina works in the background to see how your body heals while you sleep. We sync with Apple Health to track heart rate and sleep patterns automatically.
                 </AppText>
             </View>
 

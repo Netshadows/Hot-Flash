@@ -1,6 +1,6 @@
 This `blueprint.md` is optimized for **Antigravity’s** multi-agent environment. It provides the structured context needed for agents to utilize **Google Stitch** for UI generation and **GitHub MCP** for repository orchestration, ensuring the final iOS application aligns with both scientific rigor and behavioral psychology.
 
-# Blueprint: MenoCycle – A Wellness Companion for the Menopause Lifecycle
+# Blueprint: Lumina – A Wellness Companion for the Menopause Lifecycle
 
 ## 1. Project Vision & "The Why"
 
