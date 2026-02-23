@@ -26,50 +26,56 @@ import { DailyPulseScreen } from './src/screens/DailyPulseScreen';
 import { CalendarScreen } from './src/screens/CalendarScreen';
 import { MacroTimelineScreen } from './src/screens/MacroTimelineScreen';
 import { COLORS } from './src/constants/theme';
+import { ScoreProvider } from './src/context/ScoreContext';
+import { UserProvider } from './src/context/UserContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
     return (
-        <NavigationContainer>
-            <StatusBar style="dark" />
-            <Stack.Navigator
-                screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: COLORS.background },
-                    animation: 'slide_from_right',
-                }}
-                initialRouteName="OnboardingCommitment"
-            >
-                {/* Onboarding Flow & Auth */}
-                <Stack.Screen name="OnboardingCommitment" component={OnboardingCommitmentScreen} />
-                <Stack.Screen name="OnboardingGoal" component={OnboardingGoalScreen} />
-                <Stack.Screen name="OnboardingBaseline" component={OnboardingBaselineScreen} />
-                <Stack.Screen name="OnboardingLifestyle" component={OnboardingLifestyleScreen} />
-                <Stack.Screen name="OnboardingInterstitial" component={OnboardingInterstitialScreen} />
-                <Stack.Screen name="OnboardingSymptomGrid" component={OnboardingSymptomGridScreen} />
-                <Stack.Screen name="OnboardingAnalysis" component={OnboardingAnalysisScreen} />
-                <Stack.Screen name="OnboardingReveal" component={OnboardingRevealScreen} />
-                <Stack.Screen name="Login" component={LoginScreen} />
+        <UserProvider>
+            <ScoreProvider>
+                <NavigationContainer>
+                    <StatusBar style="dark" />
+                    <Stack.Navigator
+                        screenOptions={{
+                            headerShown: false,
+                            contentStyle: { backgroundColor: COLORS.background },
+                            animation: 'slide_from_right',
+                        }}
+                        initialRouteName="OnboardingCommitment"
+                    >
+                        {/* Onboarding Flow & Auth */}
+                        <Stack.Screen name="OnboardingCommitment" component={OnboardingCommitmentScreen} />
+                        <Stack.Screen name="OnboardingGoal" component={OnboardingGoalScreen} />
+                        <Stack.Screen name="OnboardingBaseline" component={OnboardingBaselineScreen} />
+                        <Stack.Screen name="OnboardingLifestyle" component={OnboardingLifestyleScreen} />
+                        <Stack.Screen name="OnboardingInterstitial" component={OnboardingInterstitialScreen} />
+                        <Stack.Screen name="OnboardingSymptomGrid" component={OnboardingSymptomGridScreen} />
+                        <Stack.Screen name="OnboardingAnalysis" component={OnboardingAnalysisScreen} />
+                        <Stack.Screen name="OnboardingReveal" component={OnboardingRevealScreen} />
+                        <Stack.Screen name="Login" component={LoginScreen} />
 
-                {/* Main Dashboard (Stubbing Tabs for now due to missing dependency wrapper) */}
-                <Stack.Screen name="MainTabs" component={DashboardScreen} />
+                        {/* Main Dashboard (Stubbing Tabs for now due to missing dependency wrapper) */}
+                        <Stack.Screen name="MainTabs" component={DashboardScreen} />
 
-                <Stack.Screen
-                    name="Logging"
-                    component={LoggingScreen}
-                    options={{ presentation: 'modal' }}
-                />
+                        <Stack.Screen
+                            name="Logging"
+                            component={LoggingScreen}
+                            options={{ presentation: 'modal' }}
+                        />
 
-                <Stack.Screen name="HealthReport" component={HealthReportScreen} />
-                <Stack.Screen name="Community" component={CommunityScreen} />
-                <Stack.Screen name="Quizzes" component={QuizzesScreen} />
-                <Stack.Screen name="QuizFlow" component={QuizFlowScreen} />
-                <Stack.Screen name="DailyActivity" component={DailyActivityScreen} />
-                <Stack.Screen name="DailyPulse" component={DailyPulseScreen} options={{ presentation: 'modal' }} />
-                <Stack.Screen name="Calendar" component={CalendarScreen} />
-                <Stack.Screen name="MacroTimeline" component={MacroTimelineScreen} />
-            </Stack.Navigator>
-        </NavigationContainer>
+                        <Stack.Screen name="HealthReport" component={HealthReportScreen} />
+                        <Stack.Screen name="Community" component={CommunityScreen} />
+                        <Stack.Screen name="Quizzes" component={QuizzesScreen} />
+                        <Stack.Screen name="QuizFlow" component={QuizFlowScreen} />
+                        <Stack.Screen name="DailyActivity" component={DailyActivityScreen} />
+                        <Stack.Screen name="DailyPulse" component={DailyPulseScreen} options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="Calendar" component={CalendarScreen} />
+                        <Stack.Screen name="MacroTimeline" component={MacroTimelineScreen} />
+                    </Stack.Navigator>
+                </NavigationContainer>
+            </ScoreProvider>
+        </UserProvider>
     );
 }

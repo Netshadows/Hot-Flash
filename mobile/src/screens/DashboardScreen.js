@@ -7,6 +7,8 @@ import { Svg, Circle } from 'react-native-svg';
 import { HealthKitService } from '../services/HealthKitService';
 import { DataStreamType } from '../models/DeviceData';
 import { Ionicons } from '@expo/vector-icons';
+import { useUser } from '../context/UserContext';
+import { PaywallModal } from '../components/PaywallModal';
 
 const { width } = Dimensions.get('window');
 
@@ -16,6 +18,9 @@ export const DashboardScreen = ({ navigation }) => {
     const [ringProgress, setRingProgress] = useState(0.0);
     const [healthData, setHealthData] = useState([]);
     const [isLoadingHealthData, setIsLoadingHealthData] = useState(true);
+    const [showPaywall, setShowPaywall] = useState(false);
+
+    const { tier, upgradeTier } = useUser();
 
     useEffect(() => {
         const loadHealthData = async () => {
@@ -43,14 +48,15 @@ export const DashboardScreen = ({ navigation }) => {
             activeOpacity={0.8}
             onPress={() => navigation.navigate('DailyActivity', { activity })}
         >
-            <View style={[styles.storyRing, { borderColor: activity.completed ? '#E0E0E0' : activity.color }]}>
-                <View style={[styles.storyImage, { backgroundColor: activity.completed ? '#F5F5F5' : activity.color }]}>
-                    {activity.completed ? (
-                        <Ionicons name="checkmark-circle" size={32} color="#999" />
-                    ) : (
-                        <Ionicons name={activity.icon} size={32} color="#FFF" />
-                    )}
+            <View style={[styles.storyRing, { borderColor: activity.color }]}>
+                <View style={[styles.storyImage, { backgroundColor: activity.color }]}>
+                    <Ionicons name={activity.icon} size={32} color="#FFF" />
                 </View>
+                {activity.completed && (
+                    <View style={styles.completedBadge}>
+                        <Ionicons name="checkmark" size={14} color="#FFF" />
+                    </View>
+                )}
             </View>
             <AppText variant="caption" style={[styles.storyTitle, activity.completed && { color: '#999' }]}>
                 {activity.title}
@@ -135,10 +141,16 @@ export const DashboardScreen = ({ navigation }) => {
                     </View>
                 </View>
 
-                {/* Clinical Report Button */}
+                {/* Clinical Report Button (Gated) */}
                 <TouchableOpacity
                     style={[styles.logSymptomsButton, { backgroundColor: '#FFB6C1', marginTop: SPACING.md }]}
-                    onPress={() => navigation.navigate('HealthReport')}
+                    onPress={() => {
+                        if (tier === 'free') {
+                            setShowPaywall(true);
+                        } else {
+                            navigation.navigate('HealthReport');
+                        }
+                    }}
                     activeOpacity={0.8}
                 >
                     <View style={styles.logSymptomsContent}>
@@ -165,6 +177,16 @@ export const DashboardScreen = ({ navigation }) => {
                 </TouchableOpacity>
 
             </ScrollView>
+
+            <PaywallModal
+                visible={showPaywall}
+                onClose={() => setShowPaywall(false)}
+                onUpgrade={(newTier) => {
+                    upgradeTier(newTier);
+                    setShowPaywall(false);
+                    navigation.navigate('HealthReport');
+                }}
+            />
         </View>
     );
 };
@@ -284,6 +306,19 @@ const styles = StyleSheet.create({
         borderRadius: 32,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    completedBadge: {
+        position: 'absolute',
+        bottom: -2,
+        right: -2,
+        backgroundColor: '#4CAF50',
+        borderRadius: 12,
+        width: 24,
+        height: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#FFF',
     },
     storyTitle: {
         textAlign: 'center',

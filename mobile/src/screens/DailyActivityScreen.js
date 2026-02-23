@@ -2,18 +2,20 @@ import React, { useState, useRef } from 'react';
 import { View, StyleSheet, ScrollView, Animated, TouchableOpacity } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
-import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { saveDailyActivity } from '../services/firebase';
+import { useScore } from '../context/ScoreContext';
 
 export const DailyActivityScreen = ({ route, navigation }) => {
     // Requires a route param: { activity: { title, color, icon, description, completed } }
     const { activity } = route.params;
     const [isComplete, setIsComplete] = useState(activity.completed);
 
-    const saveScale = useRef(new Animated.Value(0)).current;
-    const saveOpacity = useRef(new Animated.Value(0)).current;
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const opacityAnim = useRef(new Animated.Value(1)).current;
+
+    const { triggerDopamine } = useScore();
 
     const handleComplete = () => {
         setIsComplete(true);
@@ -22,11 +24,14 @@ export const DailyActivityScreen = ({ route, navigation }) => {
         // Record to database
         saveDailyActivity(activity.id);
 
-        // Dopamine sequence
+        // Dopamine sequence hook
+        triggerDopamine(25, "Activity Completed!");
+
+        // Local visual pop
         Animated.parallel([
-            Animated.timing(saveOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
-            Animated.spring(saveScale, { toValue: 1, friction: 5, tension: 60, delay: 100, useNativeDriver: true })
-        ]).start();
+            Animated.timing(scaleAnim, { toValue: 1.1, duration: 200, useNativeDriver: true }),
+            Animated.timing(opacityAnim, { toValue: 0, duration: 400, useNativeDriver: true })
+        ]).start(() => { });
 
         setTimeout(() => { navigation.goBack(); }, 1800);
     };
@@ -67,10 +72,9 @@ export const DailyActivityScreen = ({ route, navigation }) => {
 
             <View style={styles.footer}>
                 <Button
-                    title={isComplete ? "Already Completed ✔" : "Mark as Complete"}
+                    title={isComplete ? "Complete Again ✔" : "Mark as Complete"}
                     variant={isComplete ? "secondary" : "primary"}
                     onPress={handleComplete}
-                    disabled={isComplete}
                 />
             </View>
 

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Animated, Keyboard, Modal } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Animated, Keyboard, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
+import { useScore } from '../context/ScoreContext';
 
 const AnimatedPill = ({ item, isSelected, onPress }) => {
     const scaleAnim = useRef(new Animated.Value(isSelected ? 1.05 : 1)).current;
@@ -77,6 +78,8 @@ export const DailyPulseScreen = ({ navigation }) => {
     const saveScale = useRef(new Animated.Value(0)).current;
     const saveOpacity = useRef(new Animated.Value(0)).current;
 
+    const { triggerDopamine } = useScore();
+
     const handlePillPress = (item, categoryTitle) => {
         // If not selected, initialize default, then open modal
         if (!selectedData[item.id]) {
@@ -108,6 +111,7 @@ export const DailyPulseScreen = ({ navigation }) => {
         Keyboard.dismiss();
         setIsSaving(true);
         console.log("Saving pulse data: ", selectedData);
+        triggerDopamine(10, "Pulse Logged!");
 
         Animated.parallel([
             Animated.timing(saveOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
@@ -118,7 +122,10 @@ export const DailyPulseScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
             <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                 <AppText variant="heading1" style={styles.header}>Daily Pulse</AppText>
                 <AppText variant="body" style={styles.subHeader}>Log your overarching holistic metrics and triggers for today to gather more intel on your trajectory.</AppText>
@@ -163,7 +170,10 @@ export const DailyPulseScreen = ({ navigation }) => {
 
             {/* Drill-Down Modal */}
             <Modal visible={!!activeDrillDown} animationType="slide" transparent={true}>
-                <View style={styles.modalOverlay}>
+                <KeyboardAvoidingView
+                    style={styles.modalOverlay}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                >
                     <View style={styles.modalContent}>
                         <AppText variant="heading2" style={{ marginBottom: SPACING.md }}>{activeDrillDown?.label}</AppText>
 
@@ -209,7 +219,7 @@ export const DailyPulseScreen = ({ navigation }) => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </View>
+                </KeyboardAvoidingView>
             </Modal>
 
             {/* Dopamine Celebration Overlay */}
@@ -226,7 +236,7 @@ export const DailyPulseScreen = ({ navigation }) => {
                     </Animated.View>
                 </Animated.View>
             )}
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
