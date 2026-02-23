@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { AppText } from '../components/Typography';
+import { ScientificHint } from '../components/ScientificHint';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 
-export const OnboardingGoalScreen = ({ navigation }) => {
+export const OnboardingGoalScreen = ({ navigation, route }) => {
+    const { profileData } = route.params || { profileData: {} };
     const scaleAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
@@ -25,7 +27,9 @@ export const OnboardingGoalScreen = ({ navigation }) => {
 
     const handleSelect = (goal) => {
         // Navigate to next screen, passing the selected goal
-        navigation.navigate('OnboardingBaseline', { goal });
+        navigation.navigate('OnboardingBaseline', {
+            profileData: { ...profileData, primaryGoal: goal }
+        });
     };
 
     const goals = [
@@ -42,7 +46,10 @@ export const OnboardingGoalScreen = ({ navigation }) => {
                 <Animated.View style={[styles.circleInner, { transform: [{ scale: scaleAnim }] }]} />
             </View>
 
-            <AppText variant="heading1" style={styles.title}>What is your main goal?</AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl }}>
+                <AppText variant="heading1" style={styles.title}>What is your main goal?</AppText>
+                <View style={{ marginBottom: SPACING.xl }}><ScientificHint title="Goal Trajectory" rationale="Isolating your primary goal (Tracking vs Menopause Management) shifts the algorithmic weighting of symptom analysis and changes the daily curriculum provided by Lumina." /></View>
+            </View>
 
             <View style={styles.buttonContainer}>
                 {goals.map((goal, index) => (

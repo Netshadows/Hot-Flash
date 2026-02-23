@@ -2,20 +2,28 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
+import { ScientificHint } from '../components/ScientificHint';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { Picker } from '@react-native-picker/picker'; // We will need to add this dependency, or use standard RN components if not available
 
 export const OnboardingBaselineScreen = ({ navigation, route }) => {
+    const { profileData } = route.params || { profileData: {} };
+
     const [lastPeriod, setLastPeriod] = useState('just_finished');
     const [age, setAge] = useState(35);
 
     const handleNext = () => {
-        navigation.navigate('OnboardingSymptomGrid');
+        navigation.navigate('OnboardingLifestyle', {
+            profileData: { ...profileData, baseline: { lastPeriod, age } }
+        });
     }
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            <AppText variant="heading1" style={styles.title}>Let's get your baseline</AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl }}>
+                <AppText variant="heading1" style={styles.title}>Let's get your baseline</AppText>
+                <View style={{ marginBottom: SPACING.xl }}><ScientificHint title="Cycle Baselines" rationale="The length of time since your last period acts as the primary differentiator between Early Perimenopause, Late Perimenopause, and Post-Menopause." /></View>
+            </View>
 
             <AppText variant="body" style={styles.prompt}>
                 When was your last period?

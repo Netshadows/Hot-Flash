@@ -4,11 +4,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
 // Onboarding & Auth
-import { LoginScreen } from './src/screens/LoginScreen';
+import { OnboardingCommitmentScreen } from './src/screens/OnboardingCommitmentScreen';
 import { OnboardingGoalScreen } from './src/screens/OnboardingGoalScreen';
 import { OnboardingBaselineScreen } from './src/screens/OnboardingBaselineScreen';
+import { OnboardingLifestyleScreen } from './src/screens/OnboardingLifestyleScreen';
+import { OnboardingInterstitialScreen } from './src/screens/OnboardingInterstitialScreen';
 import { OnboardingSymptomGridScreen } from './src/screens/OnboardingSymptomGridScreen';
 import { OnboardingAnalysisScreen } from './src/screens/OnboardingAnalysisScreen';
+import { OnboardingRevealScreen } from './src/screens/OnboardingRevealScreen';
+import { LoginScreen } from './src/screens/LoginScreen';
 
 // Main App
 import { DashboardScreen } from './src/screens/DashboardScreen';
@@ -35,14 +39,18 @@ export default function App() {
                     contentStyle: { backgroundColor: COLORS.background },
                     animation: 'slide_from_right',
                 }}
-                initialRouteName="Login"
+                initialRouteName="OnboardingCommitment"
             >
                 {/* Onboarding Flow & Auth */}
-                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="OnboardingCommitment" component={OnboardingCommitmentScreen} />
                 <Stack.Screen name="OnboardingGoal" component={OnboardingGoalScreen} />
                 <Stack.Screen name="OnboardingBaseline" component={OnboardingBaselineScreen} />
+                <Stack.Screen name="OnboardingLifestyle" component={OnboardingLifestyleScreen} />
+                <Stack.Screen name="OnboardingInterstitial" component={OnboardingInterstitialScreen} />
                 <Stack.Screen name="OnboardingSymptomGrid" component={OnboardingSymptomGridScreen} />
                 <Stack.Screen name="OnboardingAnalysis" component={OnboardingAnalysisScreen} />
+                <Stack.Screen name="OnboardingReveal" component={OnboardingRevealScreen} />
+                <Stack.Screen name="Login" component={LoginScreen} />
 
                 {/* Main Dashboard (Stubbing Tabs for now due to missing dependency wrapper) */}
                 <Stack.Screen name="MainTabs" component={DashboardScreen} />

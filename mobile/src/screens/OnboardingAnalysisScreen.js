@@ -4,7 +4,8 @@ import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 
-export const OnboardingAnalysisScreen = ({ navigation }) => {
+export const OnboardingAnalysisScreen = ({ navigation, route }) => {
+    const { profileData } = route.params || { profileData: {} };
     const [progress, setProgress] = useState(0);
     const [step, setStep] = useState(0);
 
@@ -32,7 +33,7 @@ export const OnboardingAnalysisScreen = ({ navigation }) => {
     }, []);
 
     const handleFinish = () => {
-        navigation.navigate('MainTabs');
+        navigation.navigate('OnboardingReveal', { profileData });
     };
 
     return (

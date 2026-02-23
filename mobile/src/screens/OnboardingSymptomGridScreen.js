@@ -2,13 +2,19 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
+import { ScientificHint } from '../components/ScientificHint';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 
-export const OnboardingSymptomGridScreen = ({ navigation }) => {
+export const OnboardingSymptomGridScreen = ({ navigation, route }) => {
+    const { profileData } = route.params || { profileData: {} };
     const [selected, setSelected] = useState({});
 
     const handleNext = () => {
-        navigation.navigate('OnboardingAnalysis');
+        // Build array of selected symptoms
+        const activeSymptoms = Object.keys(selected).filter(sym => selected[sym]);
+        navigation.navigate('OnboardingAnalysis', {
+            profileData: { ...profileData, symptoms: activeSymptoms }
+        });
     }
 
     const toggleSymptom = (sym) => {
@@ -23,7 +29,10 @@ export const OnboardingSymptomGridScreen = ({ navigation }) => {
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            <AppText variant="heading1" style={styles.title}>What symptoms are you experiencing?</AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl }}>
+                <AppText variant="heading1" style={styles.title}>What symptoms are you experiencing?</AppText>
+                <View style={{ marginBottom: SPACING.xl }}><ScientificHint title="Symptom Clustering" rationale="We use a modified Greene Climacteric Scale. Grouping your symptoms helps us identify if your primary imbalance is Vasomotor (physical heat), Psychological, or Somatic." /></View>
+            </View>
 
             <View style={styles.grid}>
                 {symptoms.map(sym => (

@@ -5,11 +5,15 @@ import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 
-export const LoginScreen = ({ navigation }) => {
+export const LoginScreen = ({ navigation, route }) => {
+    const { profileData } = route.params || { profileData: {} };
     const handleLogin = (method) => {
         console.log(`Logging in via ${method}`);
-        // Advance to Onboarding flow after auth
-        navigation.navigate('OnboardingGoal');
+        console.log("=== CREATING CLINICAL PROFILE ===");
+        console.log(JSON.stringify(profileData, null, 2));
+
+        // Advance to MainTabs after creating profile with accumulated high-friction data
+        navigation.navigate('MainTabs');
     };
 
     return (
