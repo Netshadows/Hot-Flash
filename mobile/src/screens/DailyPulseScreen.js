@@ -158,7 +158,7 @@ export const DailyPulseScreen = ({ navigation }) => {
             </ScrollView>
 
             <View style={styles.footer}>
-                <Button title="Save Log" onPress={handleSave} disabled={isSaving} />
+                <Button title={isSaving ? "Generating Semantic Embeddings..." : "Save Log"} onPress={handleSave} disabled={isSaving} />
             </View>
 
             {/* Drill-Down Modal */}

@@ -20,6 +20,7 @@ import { QuizFlowScreen } from './src/screens/QuizFlowScreen';
 import { DailyActivityScreen } from './src/screens/DailyActivityScreen';
 import { DailyPulseScreen } from './src/screens/DailyPulseScreen';
 import { CalendarScreen } from './src/screens/CalendarScreen';
+import { MacroTimelineScreen } from './src/screens/MacroTimelineScreen';
 import { COLORS } from './src/constants/theme';
 
 const Stack = createNativeStackNavigator();
@@ -59,6 +60,7 @@ export default function App() {
                 <Stack.Screen name="DailyActivity" component={DailyActivityScreen} />
                 <Stack.Screen name="DailyPulse" component={DailyPulseScreen} options={{ presentation: 'modal' }} />
                 <Stack.Screen name="Calendar" component={CalendarScreen} />
+                <Stack.Screen name="MacroTimeline" component={MacroTimelineScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -88,11 +88,19 @@ export const HealthReportScreen = ({ navigation }) => {
                         </LinearGradient>
                     </View>
 
-                    <Button
-                        title="Share with Doctor"
-                        onPress={handleShare}
-                        style={styles.actionButton}
-                    />
+                    <View style={{ gap: SPACING.md, marginTop: SPACING.lg, width: '100%' }}>
+                        <Button
+                            title="Share with Doctor"
+                            onPress={handleShare}
+                            style={{ width: '100%' }}
+                        />
+                        <Button
+                            title="Push via FHIR API (EHR Export)"
+                            onPress={() => alert("Connecting to FHIR API endpoint... (Simulated)")}
+                            variant="secondary"
+                            style={{ width: '100%' }}
+                        />
+                    </View>
                 </View>
             ) : (
                 <View style={styles.setupContainer}>
