@@ -22,7 +22,7 @@ export const LoginScreen = ({ navigation }) => {
             <ScrollView contentContainerStyle={styles.content}>
                 <View style={styles.heroSection}>
                     <View style={styles.logoContainer}>
-                        <AppText style={styles.logoIcon}>✨</AppText>
+                        <Image source={require('../../assets/icon.png')} style={{ width: 80, height: 80, borderRadius: 40 }} />
                     </View>
                     <AppText variant="heading1" style={styles.title}>Lumina</AppText>
                     <AppText variant="body" style={styles.subtitle}>
