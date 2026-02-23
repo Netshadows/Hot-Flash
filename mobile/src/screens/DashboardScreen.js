@@ -28,12 +28,30 @@ export const DashboardScreen = ({ navigation }) => {
         loadHealthData();
     }, []);
 
-    const renderStory = (title, imageColor) => (
-        <TouchableOpacity style={styles.storyContainer} activeOpacity={0.8}>
-            <View style={[styles.storyRing, { borderColor: imageColor }]}>
-                <View style={[styles.storyImage, { backgroundColor: imageColor }]} />
+    const DAILY_ACTIVITIES = [
+        { id: '1', title: 'Nutrition', color: '#FFB6C1', icon: '🥗', completed: false, description: 'Learn 3 foods that can help balance estrogen levels.' },
+        { id: '2', title: 'Mindfulness', color: '#87CEFA', icon: '🧘‍♀️', completed: true, description: 'A 2-minute breathing exercise to lower cortisol.' },
+        { id: '3', title: 'Mini-Quiz', color: '#DDA0DD', icon: '🎮', completed: false, description: 'Test your knowledge to earn today\'s points!' },
+        { id: '4', title: 'Movement', color: '#98FB98', icon: '🚶‍♀️', completed: false, description: 'A quick 5-minute stretch routine for joint stiffness.' },
+    ];
+
+    const renderStory = (activity) => (
+        <TouchableOpacity
+            key={activity.id}
+            style={[styles.storyContainer, activity.completed && { opacity: 0.6 }]}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('DailyActivity', { activity })}
+        >
+            <View style={[styles.storyRing, { borderColor: activity.completed ? '#E0E0E0' : activity.color }]}>
+                <View style={[styles.storyImage, { backgroundColor: activity.completed ? '#F5F5F5' : activity.color }]}>
+                    <AppText style={{ fontSize: 28, opacity: activity.completed ? 0.3 : 1 }}>
+                        {activity.completed ? '✔️' : activity.icon}
+                    </AppText>
+                </View>
             </View>
-            <AppText variant="caption" style={styles.storyTitle}>{title}</AppText>
+            <AppText variant="caption" style={[styles.storyTitle, activity.completed && { color: '#999' }]}>
+                {activity.title}
+            </AppText>
         </TouchableOpacity>
     );
 
@@ -50,6 +68,13 @@ export const DashboardScreen = ({ navigation }) => {
                     <TouchableOpacity style={styles.avatarPlaceholder}>
                         <AppText style={styles.avatarText}>J</AppText>
                     </TouchableOpacity>
+
+                    {/* Fun Duolingo-style Streak Counter */}
+                    <View style={styles.streakBadge}>
+                        <AppText style={{ fontSize: 18, marginRight: 4 }}>🔥</AppText>
+                        <AppText style={{ fontWeight: '800', color: '#FF7F50', fontSize: 16 }}>14</AppText>
+                    </View>
+
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TouchableOpacity style={styles.calendarIcon} onPress={() => navigation.navigate('Community')}>
                             <AppText style={{ fontSize: 24 }}>💬</AppText>
@@ -75,15 +100,12 @@ export const DashboardScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Daily Stories (Instagram Style) */}
+                {/* Daily Stories (Instagram Style -> Interactive) */}
                 <View style={styles.feedHeader}>
                     <AppText variant="heading2">Daily Plan</AppText>
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesWrapper} contentContainerStyle={styles.storiesContainer}>
-                    {renderStory('Nutrition', '#FFB6C1')}
-                    {renderStory('Mindfulness', '#87CEFA')}
-                    {renderStory('Sleep', '#DDA0DD')}
-                    {renderStory('Movement', '#98FB98')}
+                    {DAILY_ACTIVITIES.map(renderStory)}
                 </ScrollView>
 
                 {/* Insight Cards */}
@@ -170,6 +192,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
     },
+    streakBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFF5EE', // Light peach
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#FFDAB9',
+    },
     calendarIcon: {
         padding: SPACING.xs,
     },
@@ -227,25 +259,28 @@ const styles = StyleSheet.create({
     },
     storyContainer: {
         alignItems: 'center',
-        width: 70,
+        width: 76,
     },
     storyRing: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        borderWidth: 2,
+        width: 76,
+        height: 76,
+        borderRadius: 38,
+        borderWidth: 2.5,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 8,
     },
     storyImage: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     storyTitle: {
         textAlign: 'center',
         color: '#4A4A4A',
+        fontWeight: '600',
     },
     card: {
         backgroundColor: COLORS.surface,
