@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-nat
 import { AppText } from '../components/Typography';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { Button } from '../components/Button';
+import { auth, saveCalendarData, getCalendarData, removeCalendarData } from '../services/firebase';
 
 export const CalendarScreen = ({ navigation }) => {
     // Generate actual JS Dates for the current month
@@ -24,13 +25,35 @@ export const CalendarScreen = ({ navigation }) => {
     const [selectedDay, setSelectedDay] = useState(null);
     const [flowData, setFlowData] = useState({}); // Example: { 14: 'Medium', 15: 'Spotting' }
 
+    React.useEffect(() => {
+        const loadData = async () => {
+            const userId = auth.currentUser?.uid || 'anonymous';
+            const data = await getCalendarData(userId, currentMonth, currentYear);
+            setFlowData(data);
+        };
+        loadData();
+    }, [currentMonth, currentYear]);
+
     const openLoggingModal = (day) => {
         if (day) setSelectedDay(day);
     };
 
-    const handleLogFlow = (level) => {
+    const handleLogFlow = async (level) => {
+        const userId = auth.currentUser?.uid || 'anonymous';
+        await saveCalendarData(userId, selectedDay, currentMonth, currentYear, { flow: level });
         setFlowData(prev => ({ ...prev, [selectedDay]: level }));
         setSelectedDay(null); // Close modal after logging
+    };
+
+    const handleRemoveRitual = async () => {
+        const userId = auth.currentUser?.uid || 'anonymous';
+        await removeCalendarData(userId, selectedDay, currentMonth, currentYear);
+        setFlowData(prev => {
+            const newData = { ...prev };
+            delete newData[selectedDay];
+            return newData;
+        });
+        setSelectedDay(null);
     };
 
     return (
@@ -146,6 +169,15 @@ export const CalendarScreen = ({ navigation }) => {
                             onPress={() => setSelectedDay(null)}
                             style={{ marginTop: SPACING.lg }}
                         />
+
+                        {flowData[selectedDay] && (
+                            <TouchableOpacity
+                                style={styles.removeBtn}
+                                onPress={handleRemoveRitual}
+                            >
+                                <AppText style={styles.removeBtnText}>Remove Ritual Information</AppText>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 </View>
             </Modal>
@@ -181,5 +213,15 @@ const styles = StyleSheet.create({
     flowRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
     flowBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1, borderColor: '#E8E8E8' },
     flowBtnSelected: { backgroundColor: '#FFE082', borderColor: '#FFB300' },
-    flowTextSelected: { color: '#B27D00', fontWeight: 'bold' }
+    flowTextSelected: { color: '#B27D00', fontWeight: 'bold' },
+    removeBtn: {
+        marginTop: SPACING.xl,
+        padding: SPACING.md,
+        alignItems: 'center',
+    },
+    removeBtnText: {
+        color: '#FF5252',
+        fontWeight: 'bold',
+        fontSize: 14,
+    }
 });

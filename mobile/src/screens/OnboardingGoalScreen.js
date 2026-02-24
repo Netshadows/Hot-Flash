@@ -4,9 +4,11 @@ import { AppText } from '../components/Typography';
 import { ScientificHint } from '../components/ScientificHint';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
+import { useUser } from '../context/UserContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export const OnboardingGoalScreen = ({ navigation, route }) => {
+    const { updateOnboardingData } = useUser();
     const { profileData } = route.params || { profileData: {} };
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const [selectedTracks, setSelectedTracks] = useState({});
@@ -29,6 +31,7 @@ export const OnboardingGoalScreen = ({ navigation, route }) => {
 
     const handleContinue = () => {
         const activeTracks = Object.keys(selectedTracks).filter(k => selectedTracks[k]);
+        updateOnboardingData({ goals: activeTracks });
         navigation.navigate('OnboardingBaseline', {
             profileData: { ...profileData, activeTracks }
         });

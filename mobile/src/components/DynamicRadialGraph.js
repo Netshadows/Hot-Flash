@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Circle, Path, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Stop, Path } from 'react-native-svg';
 import { COLORS } from '../constants/theme';
 
 const TRACK_COLORS = {
@@ -12,16 +12,16 @@ const TRACK_COLORS = {
 };
 
 export const DynamicRadialGraph = ({
-    size = 220,
+    size = 280,
     lifeStage = 'perimenopause',
     progress = 0.5,
     symptomsData = []
 }) => {
     const center = size / 2;
-    const trackRadius = size / 2 - 38; // Moved inward to allow lines on the outside
+    const innerRadius = size / 2 - 60; // Leave room for outward bars
     const strokeWidth = 14;
 
-    // Convert polar coordinates to cartesian for the line graph
+    // Convert polar coordinates to cartesian
     const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
         const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
         return {
@@ -30,50 +30,9 @@ export const DynamicRadialGraph = ({
         };
     };
 
-    // Build a smooth bezier curve loop from an array of numbers
-    const buildSmoothSymptomPath = (data) => {
-        if (!data || data.length === 0) return '';
-
-        const minRadius = trackRadius + 12; // Start outside the track
-        const maxRadius = trackRadius + 32; // Expand further outward
-
-        const angleStep = 360 / data.length;
-
-        // Calculate all points first
-        const points = data.map((val, index) => {
-            const angle = index * angleStep;
-            const normalizedVal = Math.max(0, Math.min(10, val));
-            const pointRadius = minRadius + ((normalizedVal / 10) * (maxRadius - minRadius));
-            return polarToCartesian(center, center, pointRadius, angle);
-        });
-
-        // Catmull-Rom to Cubic Bezier path generation for closed loop
-        let d = `M ${points[0].x},${points[0].y}`;
-        const tension = 0.15; // Lower = tighter, Higher = looser curve
-
-        for (let i = 0; i < points.length; i++) {
-            const p0 = points[(i - 1 + points.length) % points.length];
-            const p1 = points[i];
-            const p2 = points[(i + 1) % points.length];
-            const p3 = points[(i + 2) % points.length];
-
-            const cp1 = {
-                x: p1.x + (p2.x - p0.x) * tension,
-                y: p1.y + (p2.y - p0.y) * tension,
-            };
-            const cp2 = {
-                x: p2.x - (p3.x - p1.x) * tension,
-                y: p2.y - (p3.y - p1.y) * tension,
-            };
-            d += ` C ${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${p2.x},${p2.y}`;
-        }
-
-        return d;
-    };
-
     // Determine visual style based on life stage
     const getTrackStyle = () => {
-        const circum = 2 * Math.PI * trackRadius;
+        const circum = 2 * Math.PI * innerRadius;
         switch (lifeStage) {
             case 'perimenopause':
                 return { dash: "12, 12", color1: "#FFB300", color2: "#FB8C00" }; // Erratic & varied phase
@@ -88,58 +47,75 @@ export const DynamicRadialGraph = ({
     };
 
     const styleProps = getTrackStyle();
-    const circumference = 2 * Math.PI * trackRadius;
+    const circumference = 2 * Math.PI * innerRadius;
     const progressStrokeDashoffset = circumference - (progress * circumference);
 
     // Filter valid tracks (handles simulated array of objects, or fallback single array)
     const isMultiTrack = symptomsData.length > 0 && typeof symptomsData[0] === 'object';
     const tracks = isMultiTrack ? symptomsData : [{ id: 'default', color: TRACK_COLORS.default, data: symptomsData }];
 
-    // Render dominant symptom dots on the outer track
-    const renderDominantDots = () => {
+    // Prepare data for stacked bars
+    const renderStackedBars = () => {
         if (!isMultiTrack || tracks.length === 0) return null;
 
         const numDays = tracks[0].data.length;
         if (numDays === 0) return null;
 
-        const dots = [];
+        const maxBarRadius = 50; // Max height of a full stack outwards from the inner track
         const angleStep = 360 / numDays;
 
-        for (let i = 0; i < numDays; i++) {
-            // Find dominant track for day 'i'
-            let maxVal = -1;
-            let dominantTrackId = null;
+        // Gap between day slices (in degrees)
+        const gapDegrees = 2;
+        const sliceWidth = angleStep - gapDegrees;
 
-            tracks.forEach(track => {
+        const bars = [];
+
+        for (let i = 0; i < numDays; i++) {
+            const startAngle = i * angleStep;
+            const endAngle = startAngle + sliceWidth;
+
+            let currentRadius = innerRadius + (strokeWidth / 2) + 2; // Start just outside the base track
+
+            tracks.forEach((track, trackIdx) => {
                 const val = track.data[i];
-                if (val > maxVal) {
-                    maxVal = val;
-                    dominantTrackId = track.id;
+                // normalize value (assume 0-10 scale in mock data)
+                const normalizedVal = Math.max(0, Math.min(10, val));
+
+                if (normalizedVal > 0) {
+                    // Calculate how tall this specific segment should be
+                    const segmentHeight = (normalizedVal / 10) * maxBarRadius;
+                    const nextRadius = currentRadius + segmentHeight;
+
+                    // Generate SVG arc path for a bar segment
+                    const p1 = polarToCartesian(center, center, currentRadius, startAngle);
+                    const p2 = polarToCartesian(center, center, currentRadius, endAngle);
+                    const p3 = polarToCartesian(center, center, nextRadius, endAngle);
+                    const p4 = polarToCartesian(center, center, nextRadius, startAngle);
+
+                    // Large arc flag is 0 because the slice width is small
+                    const d = [
+                        `M ${p1.x} ${p1.y}`,
+                        `A ${currentRadius} ${currentRadius} 0 0 1 ${p2.x} ${p2.y}`,
+                        `L ${p3.x} ${p3.y}`,
+                        `A ${nextRadius} ${nextRadius} 0 0 0 ${p4.x} ${p4.y}`,
+                        `Z`
+                    ].join(" ");
+
+                    bars.push(
+                        <Path
+                            key={`bar-${i}-${trackIdx}`}
+                            d={d}
+                            fill={TRACK_COLORS[track.id] || TRACK_COLORS.default}
+                            stroke={COLORS.background} // Separator line between stacks
+                            strokeWidth={1}
+                        />
+                    );
+
+                    currentRadius = nextRadius; // Move start point out for the next segment in the stack
                 }
             });
-
-            // Only draw a dot if the symptom was somewhat present
-            if (maxVal > 2 && dominantTrackId) {
-                const angle = i * angleStep;
-                // Place dot straight exactly on the track radius
-                const pt = polarToCartesian(center, center, trackRadius, angle);
-                const dotColor = TRACK_COLORS[dominantTrackId] || TRACK_COLORS.default;
-
-                dots.push(
-                    <Circle
-                        key={`dot-${i}`}
-                        cx={pt.x}
-                        cy={pt.y}
-                        r={3}
-                        fill={dotColor}
-                        stroke="#FFF"
-                        strokeWidth="1"
-                        opacity={0.9}
-                    />
-                );
-            }
         }
-        return dots;
+        return bars;
     };
 
     return (
@@ -156,7 +132,7 @@ export const DynamicRadialGraph = ({
                 <Circle
                     cx={center}
                     cy={center}
-                    r={trackRadius}
+                    r={innerRadius}
                     stroke="#F3F4F6"
                     strokeWidth={strokeWidth}
                     fill="none"
@@ -167,7 +143,7 @@ export const DynamicRadialGraph = ({
                 <Circle
                     cx={center}
                     cy={center}
-                    r={trackRadius}
+                    r={innerRadius}
                     stroke="url(#progressGrad)"
                     strokeWidth={strokeWidth}
                     fill="none"
@@ -177,27 +153,8 @@ export const DynamicRadialGraph = ({
                     transform={`rotate(-90 ${center} ${center})`}
                 />
 
-                {/* Render Circular Smooth Symptom Paths */}
-                {tracks.map((track, idx) => {
-                    const pathString = buildSmoothSymptomPath(track.data);
-                    if (!pathString) return null;
-                    const pathColor = TRACK_COLORS[track.id] || TRACK_COLORS.default;
-
-                    return (
-                        <Path
-                            key={`path-${track.id}-${idx}`}
-                            d={pathString}
-                            fill={pathColor + "15"} // 15 Hex Alpha = Very translucent
-                            stroke={pathColor}
-                            strokeWidth="2"
-                            strokeLinejoin="round"
-                            strokeLinecap="round"
-                        />
-                    );
-                })}
-
-                {/* Render Dominant Symptom Dots On the Track */}
-                {renderDominantDots()}
+                {/* Render Circular Stacked Bars */}
+                {renderStackedBars()}
 
             </Svg>
         </View>

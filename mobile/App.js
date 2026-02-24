@@ -4,6 +4,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
 // Onboarding & Auth
+import { OnboardingSDOHScreen } from './src/screens/OnboardingSDOHScreen';
+import { OnboardingBITScreen } from './src/screens/OnboardingBITScreen';
+import { OnboardingCBTScreen } from './src/screens/OnboardingCBTScreen';
+import { OnboardingIDEASScreen } from './src/screens/OnboardingIDEASScreen';
+import { OnboardingIntegrationsScreen } from './src/screens/OnboardingIntegrationsScreen';
 import { OnboardingCommitmentScreen } from './src/screens/OnboardingCommitmentScreen';
 import { OnboardingGoalScreen } from './src/screens/OnboardingGoalScreen';
 import { OnboardingBaselineScreen } from './src/screens/OnboardingBaselineScreen';
@@ -27,8 +32,12 @@ import { DailyJournalScreen } from './src/screens/DailyJournalScreen';
 import { JournalHistoryScreen } from './src/screens/JournalHistoryScreen';
 import { CalendarScreen } from './src/screens/CalendarScreen';
 import { MacroTimelineScreen } from './src/screens/MacroTimelineScreen';
+import { OnboardingDataScreen } from './src/screens/OnboardingDataScreen';
 import { PreferencesScreen } from './src/screens/PreferencesScreen';
 import { IntegrationsScreen } from './src/screens/IntegrationsScreen';
+import { MindfulnessActivityScreen } from './src/screens/MindfulnessActivityScreen';
+import { MovementActivityScreen } from './src/screens/MovementActivityScreen';
+import { NutritionActivityScreen } from './src/screens/NutritionActivityScreen';
 import { COLORS } from './src/constants/theme';
 import { ScoreProvider } from './src/context/ScoreContext';
 import { UserProvider } from './src/context/UserContext';
@@ -47,9 +56,16 @@ export default function App() {
                             contentStyle: { backgroundColor: COLORS.background },
                             animation: 'slide_from_right',
                         }}
-                        initialRouteName="OnboardingCommitment"
+                        initialRouteName="OnboardingSDOH"
                     >
-                        {/* Onboarding Flow & Auth */}
+                        {/* Advanced Onboarding Flow */}
+                        <Stack.Screen name="OnboardingSDOH" component={OnboardingSDOHScreen} />
+                        <Stack.Screen name="OnboardingBIT" component={OnboardingBITScreen} />
+                        <Stack.Screen name="OnboardingCBT" component={OnboardingCBTScreen} />
+                        <Stack.Screen name="OnboardingIDEAS" component={OnboardingIDEASScreen} />
+                        <Stack.Screen name="OnboardingIntegrations" component={OnboardingIntegrationsScreen} />
+
+                        {/* Existing Onboarding Flow & Auth */}
                         <Stack.Screen name="OnboardingCommitment" component={OnboardingCommitmentScreen} />
                         <Stack.Screen name="OnboardingGoal" component={OnboardingGoalScreen} />
                         <Stack.Screen name="OnboardingBaseline" component={OnboardingBaselineScreen} />
@@ -74,12 +90,16 @@ export default function App() {
                         <Stack.Screen name="Quizzes" component={QuizzesScreen} />
                         <Stack.Screen name="QuizFlow" component={QuizFlowScreen} />
                         <Stack.Screen name="DailyActivity" component={DailyActivityScreen} />
+                        <Stack.Screen name="MindfulnessActivity" component={MindfulnessActivityScreen} />
+                        <Stack.Screen name="MovementActivity" component={MovementActivityScreen} />
+                        <Stack.Screen name="NutritionActivity" component={NutritionActivityScreen} />
                         <Stack.Screen name="DailyPulse" component={DailyPulseScreen} options={{ presentation: 'modal' }} />
                         <Stack.Screen name="DailyJournal" component={DailyJournalScreen} options={{ presentation: 'modal' }} />
                         <Stack.Screen name="JournalHistory" component={JournalHistoryScreen} />
                         <Stack.Screen name="Calendar" component={CalendarScreen} />
                         <Stack.Screen name="MacroTimeline" component={MacroTimelineScreen} />
                         <Stack.Screen name="Preferences" component={PreferencesScreen} />
+                        <Stack.Screen name="OnboardingData" component={OnboardingDataScreen} />
                         <Stack.Screen name="Integrations" component={IntegrationsScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>

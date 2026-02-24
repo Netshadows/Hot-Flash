@@ -4,6 +4,7 @@ import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { ScientificHint } from '../components/ScientificHint';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
+import { useUser } from '../context/UserContext';
 import { Ionicons } from '@expo/vector-icons';
 
 // Mapping tracks to their specific symptoms
@@ -49,6 +50,7 @@ const DEFAULT_SYMPTOMS = [
 ];
 
 export const OnboardingSymptomGridScreen = ({ navigation, route }) => {
+    const { updateOnboardingData } = useUser();
     const { profileData } = route.params || { profileData: {} };
     const [selected, setSelected] = useState({});
 
@@ -87,6 +89,7 @@ export const OnboardingSymptomGridScreen = ({ navigation, route }) => {
 
     const handleNext = () => {
         const activeSymptoms = Object.keys(selected).filter(sym => selected[sym]);
+        updateOnboardingData({ symptoms: activeSymptoms });
         navigation.navigate('OnboardingAnalysis', {
             profileData: { ...profileData, symptoms: activeSymptoms }
         });

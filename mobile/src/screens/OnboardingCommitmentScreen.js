@@ -5,10 +5,13 @@ import { Button } from '../components/Button';
 import { ScientificHint } from '../components/ScientificHint';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useUser } from '../context/UserContext';
 
 export const OnboardingCommitmentScreen = ({ navigation }) => {
+    const { updateOnboardingData } = useUser();
     // Initialize empty profileData object to pass through the funnel
     const handleCommit = () => {
+        updateOnboardingData({ commitment: 'High' });
         navigation.navigate('OnboardingGoal', { profileData: {} });
     };
 

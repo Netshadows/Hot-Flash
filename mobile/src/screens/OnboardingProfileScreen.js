@@ -3,8 +3,10 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
+import { useUser } from '../context/UserContext';
 
 export const OnboardingProfileScreen = ({ navigation }) => {
+    const { updateOnboardingData } = useUser();
     const stages = ["Perimenopause", "Menopause", "Postmenopause", "I'm not sure"];
     const [selected, setSelected] = useState(null);
 
@@ -50,7 +52,10 @@ export const OnboardingProfileScreen = ({ navigation }) => {
             <View style={styles.footer}>
                 <Button
                     title="Next"
-                    onPress={() => navigation.navigate('OnboardingFriction')}
+                    onPress={() => {
+                        updateOnboardingData({ stage: stages[selected] });
+                        navigation.navigate('OnboardingFriction');
+                    }}
                     style={{ opacity: selected !== null ? 1 : 0.5 }}
                 />
             </View>

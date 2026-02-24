@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Animated, Keyboard, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
+import { SelectGroup } from '../components/SelectGroup';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { useScore } from '../context/ScoreContext';
 import { useUser } from '../context/UserContext';
+import { Ionicons } from '@expo/vector-icons';
 
 const AnimatedPill = ({ item, isSelected, onPress }) => {
     const scaleAnim = useRef(new Animated.Value(isSelected ? 1.05 : 1)).current;
@@ -31,6 +33,13 @@ const AnimatedPill = ({ item, isSelected, onPress }) => {
         </Animated.View>
     );
 };
+
+// Supplement Library Data
+const SUPPLEMENT_LIBRARY = [
+    "Vitamin D3", "Magnesium Glycinate", "Black Cohosh", "Evening Primrose Oil",
+    "Omega-3s / Fish Oil", "Ashwagandha", "Maca Root", "Probiotics", "B-Complex",
+    "Melatonin", "DIM (Diindolylmethane)", "Calcium", "Zinc", "Iron"
+];
 
 const TRACK_SYMPTOMS = {
     hot_flashes: [
@@ -127,7 +136,7 @@ export const DailyPulseScreen = ({ navigation }) => {
             items: [
                 { id: 'caffeine', label: 'Caffeine Intake' },
                 { id: 'alcohol', label: 'Alcohol Intake' },
-                { id: 'hydration', label: 'Good Hydration' },
+                { id: 'hydration', label: 'Water Intake' },
                 { id: 'exercise', label: 'Exercise/Movement' },
                 { id: 'high_stress', label: 'High Stress' },
                 { id: 'supplements', label: 'Took Supplements' }
@@ -135,7 +144,7 @@ export const DailyPulseScreen = ({ navigation }) => {
         }
     ];
 
-    // selectedData is a map: { [id]: { severity: 'Moderate', notes: '' } }
+    // selectedData is a map: { [id]: { severity|count|supplements: val, details: '', timeOfDay: '' } }
     const [selectedData, setSelectedData] = useState({});
     const [activeDrillDown, setActiveDrillDown] = useState(null); // { id, label, categoryTitle }
     const [notes, setNotes] = useState('');
@@ -145,9 +154,17 @@ export const DailyPulseScreen = ({ navigation }) => {
     const saveOpacity = useRef(new Animated.Value(0)).current;
 
     const handlePillPress = (item, categoryTitle) => {
-        // If not selected, initialize default, then open modal
         if (!selectedData[item.id]) {
-            setSelectedData(prev => ({ ...prev, [item.id]: { severity: 'Moderate', details: '' } }));
+            const defaultData = { details: '' };
+            if (categoryTitle === 'Symptoms') {
+                defaultData.severity = 'Moderate';
+                defaultData.timeOfDay = 'Afternoon';
+            } else if (['caffeine', 'alcohol', 'hydration'].includes(item.id)) {
+                defaultData.count = 1;
+            } else if (item.id === 'supplements') {
+                defaultData.supplements = [];
+            }
+            setSelectedData(prev => ({ ...prev, [item.id]: defaultData }));
         }
         setActiveDrillDown({ ...item, categoryTitle });
     };
@@ -183,6 +200,99 @@ export const DailyPulseScreen = ({ navigation }) => {
         ]).start();
 
         setTimeout(() => { navigation.goBack(); }, 1800);
+    };
+
+    // --- Render Helpers for Drill Down Modal ---
+
+    const renderSymptomDrillDown = () => (
+        <>
+            <View style={{ marginBottom: SPACING.lg }}>
+                <AppText variant="body" style={styles.drillLabel}>Severity:</AppText>
+                <View style={styles.severityRow}>
+                    {['Mild', 'Moderate', 'Severe'].map(sev => {
+                        const isSevSelected = selectedData[activeDrillDown.id]?.severity === sev;
+                        return (
+                            <TouchableOpacity
+                                key={sev}
+                                style={[styles.sevButton, isSevSelected && styles.sevButtonSelected]}
+                                onPress={() => updateDrillData('severity', sev)}
+                            >
+                                <AppText style={[styles.sevButtonText, isSevSelected && styles.sevButtonTextSelected]}>{sev}</AppText>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+            </View>
+            <View style={{ marginBottom: SPACING.lg }}>
+                <AppText variant="body" style={styles.drillLabel}>Approximate Time of Day:</AppText>
+                <SelectGroup
+                    options={["Morning", "Afternoon", "Evening", "Night"]}
+                    selected={selectedData[activeDrillDown.id]?.timeOfDay || 'Afternoon'}
+                    onSelect={(val) => updateDrillData('timeOfDay', val)}
+                />
+            </View>
+        </>
+    );
+
+    const renderCounterDrillDown = () => {
+        const count = selectedData[activeDrillDown.id]?.count || 1;
+        let unitText = 'portions';
+        if (activeDrillDown.id === 'hydration') unitText = 'glasses (8oz)';
+        if (activeDrillDown.id === 'caffeine') unitText = 'cups';
+        if (activeDrillDown.id === 'alcohol') unitText = 'drinks';
+
+        return (
+            <View style={styles.counterContainer}>
+                <AppText variant="body" style={styles.drillLabel}>Amount ({unitText}):</AppText>
+                <View style={styles.stepperWrap}>
+                    <TouchableOpacity
+                        style={styles.stepperBtn}
+                        onPress={() => updateDrillData('count', Math.max(0, count - 1))}
+                    >
+                        <Ionicons name="remove" size={24} color={COLORS.primary} />
+                    </TouchableOpacity>
+                    <AppText style={styles.stepperValue}>{count}</AppText>
+                    <TouchableOpacity
+                        style={styles.stepperBtn}
+                        onPress={() => updateDrillData('count', count + 1)}
+                    >
+                        <Ionicons name="add" size={24} color={COLORS.primary} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    };
+
+    const renderSupplementsDrillDown = () => {
+        const selectedSupps = selectedData[activeDrillDown.id]?.supplements || [];
+        return (
+            <View style={{ marginBottom: SPACING.lg }}>
+                <AppText variant="body" style={styles.drillLabel}>Select Supplements Taken:</AppText>
+                <ScrollView style={{ maxHeight: 200, borderWidth: 1, borderColor: '#eee', borderRadius: 8, padding: 8 }}>
+                    {SUPPLEMENT_LIBRARY.map(supp => {
+                        const isSel = selectedSupps.includes(supp);
+                        return (
+                            <TouchableOpacity
+                                key={supp}
+                                style={[styles.suppItem, isSel && styles.suppItemSelected]}
+                                onPress={() => {
+                                    if (isSel) {
+                                        updateDrillData('supplements', selectedSupps.filter(s => s !== supp));
+                                    } else {
+                                        updateDrillData('supplements', [...selectedSupps, supp]);
+                                    }
+                                }}
+                            >
+                                <AppText style={{ color: isSel ? COLORS.primary : COLORS.textMain, fontWeight: isSel ? '700' : '400' }}>{supp}</AppText>
+                                <View style={[styles.checkbox, isSel && styles.checkboxSelected]}>
+                                    {isSel && <Ionicons name="checkmark" size={14} color="#FFF" />}
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
+            </View>
+        );
     };
 
     return (
@@ -241,32 +351,20 @@ export const DailyPulseScreen = ({ navigation }) => {
                     <View style={styles.modalContent}>
                         <AppText variant="heading2" style={{ marginBottom: SPACING.md }}>{activeDrillDown?.label}</AppText>
 
-                        {activeDrillDown?.categoryTitle === "Symptoms" && (
-                            <View style={{ marginBottom: SPACING.lg }}>
-                                <AppText variant="body" style={{ marginBottom: SPACING.sm, fontWeight: '600' }}>Severity:</AppText>
-                                <View style={styles.severityRow}>
-                                    {['Mild', 'Moderate', 'Severe'].map(sev => {
-                                        const isSevSelected = selectedData[activeDrillDown?.id]?.severity === sev;
-                                        return (
-                                            <TouchableOpacity
-                                                key={sev}
-                                                style={[styles.sevButton, isSevSelected && styles.sevButtonSelected]}
-                                                onPress={() => updateDrillData('severity', sev)}
-                                            >
-                                                <AppText style={[styles.sevButtonText, isSevSelected && styles.sevButtonTextSelected]}>{sev}</AppText>
-                                            </TouchableOpacity>
-                                        );
-                                    })}
-                                </View>
-                            </View>
-                        )}
+                        {/* Conditional Rendering based on tag type */}
+                        {activeDrillDown?.categoryTitle === "Symptoms" && renderSymptomDrillDown()}
 
-                        <View style={{ marginBottom: SPACING.xl }}>
-                            <AppText variant="body" style={{ marginBottom: SPACING.sm, fontWeight: '600' }}>
-                                {activeDrillDown?.categoryTitle === "Positives" ? "What triggered this positive state?" : "Specific notes or triggers:"}
+                        {['caffeine', 'alcohol', 'hydration'].includes(activeDrillDown?.id) && renderCounterDrillDown()}
+
+                        {activeDrillDown?.id === 'supplements' && renderSupplementsDrillDown()}
+
+
+                        <View style={{ marginBottom: SPACING.xl, marginTop: ['caffeine', 'alcohol', 'hydration', 'supplements'].includes(activeDrillDown?.id) ? 10 : 0 }}>
+                            <AppText variant="body" style={styles.drillLabel}>
+                                {activeDrillDown?.categoryTitle === "Positives" ? "What triggered this positive state?" : "Specific context or triggers:"}
                             </AppText>
                             <TextInput
-                                style={[styles.textInput, { minHeight: 80 }]}
+                                style={[styles.textInput, { minHeight: 60 }]}
                                 multiline
                                 placeholder="Add context..."
                                 placeholderTextColor={COLORS.textMuted}
@@ -311,6 +409,7 @@ const styles = StyleSheet.create({
     subHeader: { fontSize: 16, color: COLORS.textMuted, marginBottom: SPACING.xl },
     section: { marginBottom: SPACING.xl },
     sectionTitle: { fontSize: 20, color: COLORS.textMain, marginBottom: SPACING.md },
+    drillLabel: { marginBottom: SPACING.sm, fontWeight: '600' },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     pill: {
         paddingHorizontal: SPACING.md,
@@ -372,6 +471,7 @@ const styles = StyleSheet.create({
         padding: SPACING.xl,
         paddingBottom: 40,
         minHeight: 300,
+        maxHeight: '90%'
     },
     severityRow: {
         flexDirection: 'row',
@@ -405,5 +505,61 @@ const styles = StyleSheet.create({
         color: COLORS.primary,
         fontSize: 16,
         fontWeight: '600',
+    },
+
+    // Counter Styles
+    counterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: SPACING.lg,
+        padding: SPACING.md,
+        backgroundColor: '#F8F9FA',
+        borderRadius: RADIUS.md
+    },
+    stepperWrap: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFF',
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#E8E8E8'
+    },
+    stepperBtn: {
+        padding: 8,
+    },
+    stepperValue: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: COLORS.textMain,
+        minWidth: 40,
+        textAlign: 'center'
+    },
+
+    // Supplement Styles
+    suppItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: SPACING.sm,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0'
+    },
+    suppItemSelected: {
+        backgroundColor: '#F8FBFF',
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#CCC',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    checkboxSelected: {
+        backgroundColor: COLORS.primary,
+        borderColor: COLORS.primary,
     }
 });

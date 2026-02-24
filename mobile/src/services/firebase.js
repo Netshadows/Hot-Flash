@@ -4,7 +4,7 @@
 // We are using Expo Go / Web compatible config as requested.
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, addDoc, collection, serverTimestamp, query, where, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 // Replace these values with your actual Firebase project configuration found in the Firebase Console
 const firebaseConfig = {
@@ -84,17 +84,65 @@ export const getMonthlySymptoms = async (userId) => {
         {
             id: 'vasomotor',
             name: 'Vasomotor',
-            data: generateCurve(4, 0.3, 4, 30) // Peaks and valleys
+            data: generateCurve(4, 0.4, 5, 30) // Taller Peaks and valleys
         },
         {
             id: 'psychological',
             name: 'Psychological',
-            data: generateCurve(5, 0.1, 3, 30) // Slower wave
+            data: generateCurve(3, 0.15, 4, 30) // Slower wave, taller
         },
         {
             id: 'somatic',
             name: 'Somatic',
-            data: generateCurve(3, 0.5, 2, 30) // More frequent small shifts
+            data: generateCurve(2, 0.6, 4, 30) // More frequent shifts, taller
         }
     ];
+};
+
+// Calendar / Timeline Persistence
+export const saveCalendarData = async (userId, day, month, year, data) => {
+    try {
+        const docId = `${year}-${month}-${day}`;
+        await setDoc(doc(db, 'users', userId, 'calendar', docId), {
+            ...data,
+            day,
+            month,
+            year,
+            updatedAt: serverTimestamp(),
+        });
+        return { success: true };
+    } catch (e) {
+        console.error("Error saving calendar data: ", e);
+        return { success: false, error: e };
+    }
+};
+
+export const getCalendarData = async (userId, month, year) => {
+    try {
+        const q = query(
+            collection(db, 'users', userId, 'calendar'),
+            where('month', '==', month),
+            where('year', '==', year)
+        );
+        const querySnapshot = await getDocs(q);
+        const data = {};
+        querySnapshot.forEach((doc) => {
+            data[doc.data().day] = doc.data().flow;
+        });
+        return data;
+    } catch (e) {
+        console.error("Error fetching calendar data: ", e);
+        return {};
+    }
+};
+
+export const removeCalendarData = async (userId, day, month, year) => {
+    try {
+        const docId = `${year}-${month}-${day}`;
+        await deleteDoc(doc(db, 'users', userId, 'calendar', docId));
+        return { success: true };
+    } catch (e) {
+        console.error("Error deleting calendar data: ", e);
+        return { success: false, error: e };
+    }
 };

@@ -3,8 +3,10 @@ import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
+import { useUser } from '../context/UserContext';
 
 export const OnboardingFrictionScreen = ({ navigation }) => {
+    const { updateOnboardingData } = useUser();
     const goalsAndFrictions = [
         { id: 'energy', label: 'More Energy', type: 'positive' },
         { id: 'sleep', label: 'Better Sleep', type: 'positive' },
@@ -64,7 +66,10 @@ export const OnboardingFrictionScreen = ({ navigation }) => {
             <View style={styles.footer}>
                 <Button
                     title="Finish Setup"
-                    onPress={() => navigation.navigate('MainTabs')}
+                    onPress={() => {
+                        updateOnboardingData({ frictionPoints: selected });
+                        navigation.navigate('MainTabs');
+                    }}
                     disabled={selected.length === 0}
                     style={{ opacity: selected.length === 0 ? 0.5 : 1 }}
                 />

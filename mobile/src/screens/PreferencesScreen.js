@@ -7,7 +7,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '../context/UserContext';
 
 export const PreferencesScreen = ({ navigation }) => {
-    const { activeTracks, toggleTrack } = useUser();
+    const { activeTracks, toggleTrack, logout } = useUser();
+
+    const handleLogout = async () => {
+        await logout();
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Welcome' }],
+        });
+    };
 
     const tracks = [
         { id: 'hot_flashes', label: 'Vasomotor (Hot Flashes)', icon: 'flame-outline' },
@@ -58,6 +66,17 @@ export const PreferencesScreen = ({ navigation }) => {
                 <View style={[styles.actionSection, { marginBottom: SPACING.lg }]}>
                     <TouchableOpacity
                         style={styles.menuItem}
+                        onPress={() => navigation.navigate('OnboardingData')}
+                    >
+                        <View style={styles.menuItemLeft}>
+                            <Ionicons name="clipboard-outline" size={24} color={COLORS.primary} />
+                            <AppText style={styles.menuItemText}>Onboarding Data</AppText>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.menuItem}
                         onPress={() => navigation.navigate('HealthReport')}
                     >
                         <View style={styles.menuItemLeft}>
@@ -96,6 +115,14 @@ export const PreferencesScreen = ({ navigation }) => {
                         <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                     </TouchableOpacity>
                 </View>
+
+                <TouchableOpacity
+                    style={[styles.actionSection, styles.logoutButton, { marginTop: SPACING.xxl }]}
+                    onPress={handleLogout}
+                >
+                    <Ionicons name="log-out-outline" size={24} color="#FF5252" />
+                    <AppText style={styles.logoutText}>Log Out</AppText>
+                </TouchableOpacity>
             </ScrollView>
         </View>
     );
@@ -181,4 +208,17 @@ const styles = StyleSheet.create({
     },
     menuItemLeft: { flexDirection: 'row', alignItems: 'center' },
     menuItemText: { marginLeft: SPACING.md, fontSize: 16, color: COLORS.textMain, fontWeight: '500' },
+    logoutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: SPACING.lg,
+        borderColor: '#FF5252',
+    },
+    logoutText: {
+        marginLeft: SPACING.sm,
+        fontSize: 16,
+        color: '#FF5252',
+        fontWeight: '700',
+    },
 });
