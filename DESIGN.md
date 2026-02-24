@@ -7,15 +7,19 @@ A "Clinical-Clean" aesthetic (Light Mode Default). The goal is clarity, trust, a
 - **Dark Mode (Toggle/System)**: The previous "OLED Dark" empathy palette for night-time usage.
 
 
-## 2. Color Palette & Roles (Flo-Inspired)
+## 2. Color Palette & Roles (Stitch-Inspired)
 **Light Theme (Default)**
-- **Background**: `#FFF9FA` (Very pale pink/white)
+- **Background**: `#FDF9F8` (Off-white / Warm)
 - **Surface**: `#FFFFFF` (Pure White)
-- **Primary**: `#FF5864` (Flo Pink - Warm, vibrant)
-- **Primary Glare**: `#FF8090` (Soft Pink)
-- **Secondary/Success**: `#FFB6C1` (Light Pink) or `#10B981` (Emerald for success data)
-- **Text Main**: `#2D2D2D` (Soft Black)
-- **Text Muted**: `#757575` (Warm Grey)
+- **Primary**: `#FF6B81` (Vibrant Coral Pink)
+- **Primary Glare**: `#FF8090` (Soft Pink glow)
+- **Accent Pink**: `#FFF5F6` (Very faint pink background)
+- **Insight Colors**:
+  - **Blue**: `#A7C7FF` / Accent: `#E8F2FF`
+  - **Yellow**: `#FFE0A3` / Accent: `#FFF7E6`
+  - **Purple**: `#D4BFFF` / Accent: `#F3E8FF`
+- **Text Main**: `#333333` (Soft Black)
+- **Text Muted**: `#8A8A8F` (Warm Grey)
 
 **Dark Theme (Overrides)**
 - **Background**: `#1A1A1A`

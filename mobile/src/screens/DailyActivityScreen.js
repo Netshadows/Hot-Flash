@@ -4,6 +4,7 @@ import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { saveDailyActivity } from '../services/firebase';
 import { useScore } from '../context/ScoreContext';
 
@@ -80,8 +81,8 @@ export const DailyActivityScreen = ({ route, navigation }) => {
 
             {/* Dopamine Celebration Overlay */}
             {isComplete && !activity.completed && (
-                <Animated.View style={[StyleSheet.absoluteFill, styles.rewardOverlay, { opacity: saveOpacity }]}>
-                    <Animated.View style={{ transform: [{ scale: saveScale }], alignItems: 'center' }}>
+                <Animated.View style={[StyleSheet.absoluteFill, styles.rewardOverlay, { opacity: opacityAnim }]}>
+                    <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
                         <AppText style={{ fontSize: 80, marginBottom: 20 }}>🔥</AppText>
                         <AppText variant="heading1" style={{ color: COLORS.primary, textAlign: 'center' }}>Daily Plan Crushed!</AppText>
 

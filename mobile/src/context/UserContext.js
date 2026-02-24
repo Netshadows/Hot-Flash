@@ -8,6 +8,21 @@ export const UserProvider = ({ children }) => {
     // Tiers: 'free', 'premium', 'ai_pro'
     const [tier, setTier] = useState('free');
 
+    const [activeTracks, setActiveTracks] = useState({
+        hot_flashes: true,
+        sleep: true,
+        weight: false,
+        energy: false,
+        mood: true,
+    });
+
+    const toggleTrack = (trackId) => {
+        setActiveTracks(prev => ({
+            ...prev,
+            [trackId]: !prev[trackId]
+        }));
+    };
+
     // Used by PaywallModal to elevate privileges
     const upgradeTier = (newTier) => {
         setTier(newTier);
@@ -15,7 +30,7 @@ export const UserProvider = ({ children }) => {
     };
 
     return (
-        <UserContext.Provider value={{ tier, upgradeTier }}>
+        <UserContext.Provider value={{ tier, upgradeTier, activeTracks, toggleTrack }}>
             {children}
         </UserContext.Provider>
     );

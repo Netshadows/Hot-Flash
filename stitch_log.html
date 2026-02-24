@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Flo-Inspired Symptom Log - Resonance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF6B6B", // Bright coral pink from Flo
+                        "background": "#FFFFFF",
+                        "accent-pink": "#FFF0F0",
+                        "accent-blue": "#E8F2FF",
+                        "accent-purple": "#F3E8FF",
+                        "accent-yellow": "#FFF7E6",
+                        "text-main": "#2D2D2D",
+                        "text-muted": "#828282"
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "1.25rem",
+                        "xl": "1.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-color: #FF6B6B;
+            --secondary-bg: #F9F9F9;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: white;
+            color: #2D2D2D;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .symptom-card {
+            @apply flex flex-col items-center justify-center gap-2 p-4 rounded-2xl transition-all active:scale-95 border-2 border-transparent;
+        }
+        .symptom-card.active {
+            @apply border-primary bg-accent-pink;
+        }
+        .category-header {
+            @apply py-2 px-4 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden no-scrollbar pb-32">
+<header class="flex items-center bg-white p-6 pt-10 justify-between sticky top-0 z-50">
+<div class="flex flex-col">
+<span class="text-text-muted text-sm font-medium">Resonance</span>
+<h1 class="text-text-main text-2xl font-bold leading-tight">Symptom Log</h1>
+</div>
+<button class="flex items-center justify-center size-10 rounded-full bg-gray-100 text-text-main">
+<span class="material-symbols-outlined">close</span>
+</button>
+</header>
+<main class="px-6 space-y-10">
+<section>
+<div class="category-header bg-accent-pink text-primary">Vasomotor</div>
+<div class="bg-gray-50 rounded-3xl p-6 space-y-8">
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<p class="text-text-main font-semibold">Hot Flash Severity</p>
+<span class="text-primary font-bold">Moderate</span>
+</div>
+<div class="relative flex items-center h-12">
+<div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-2/3 rounded-full"></div>
+</div>
+<div class="absolute left-2/3 -translate-x-1/2 size-8 bg-white rounded-full shadow-md border-2 border-primary cursor-pointer"></div>
+</div>
+<div class="flex justify-between text-[10px] text-text-muted font-bold uppercase tracking-widest px-1">
+<span>None</span>
+<span>Severe</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-gray-200">
+<p class="text-text-main font-semibold">Duration (min)</p>
+<div class="flex items-center gap-4 bg-white p-1 rounded-full border border-gray-100 shadow-sm">
+<button class="size-10 flex items-center justify-center rounded-full bg-gray-50 text-primary active:scale-95 transition-transform">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<span class="text-xl font-bold min-w-[2ch] text-center">8</span>
+<button class="size-10 flex items-center justify-center rounded-full bg-gray-50 text-primary active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="category-header bg-accent-blue text-blue-500">Psychological</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="symptom-card bg-gray-50">
+<span class="material-symbols-outlined text-4xl text-primary">air</span>
+<span class="text-sm font-semibold">Anxiety</span>
+</button>
+<button class="symptom-card active">
+<span class="material-symbols-outlined text-4xl text-primary">cloudy</span>
+<span class="text-sm font-semibold text-text-main">Brain Fog</span>
+</button>
+<button class="symptom-card bg-gray-50">
+<span class="material-symbols-outlined text-4xl text-primary">bolt</span>
+<span class="text-sm font-semibold">Irritable</span>
+</button>
+<button class="symptom-card bg-gray-50">
+<span class="material-symbols-outlined text-4xl text-primary">water_drop</span>
+<span class="text-sm font-semibold">Low Mood</span>
+</button>
+</div>
+</section>
+<section>
+<div class="category-header bg-accent-purple text-purple-500">Urogenital</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between bg-gray-50 p-5 rounded-2xl">
+<span class="text-text-main font-semibold">Dryness</span>
+<div class="w-14 h-8 bg-primary rounded-full relative flex items-center px-1">
+<div class="size-6 bg-white rounded-full ml-auto shadow-sm"></div>
+</div>
+</div>
+<div class="flex items-center justify-between bg-gray-50 p-5 rounded-2xl">
+<span class="text-text-main font-semibold">Pain</span>
+<div class="w-14 h-8 bg-gray-200 rounded-full relative flex items-center px-1">
+<div class="size-6 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+<div class="flex items-center justify-between bg-gray-50 p-5 rounded-2xl">
+<span class="text-text-main font-semibold">Low Libido</span>
+<div class="w-14 h-8 bg-gray-200 rounded-full relative flex items-center px-1">
+<div class="size-6 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+</div>
+</section>
+<section class="pb-8">
+<div class="category-header bg-accent-yellow text-orange-500">Somatic</div>
+<div class="flex flex-wrap gap-3">
+<button class="px-6 py-3 rounded-full bg-primary text-white font-bold text-sm shadow-md transition-all active:scale-95">
+                        Joint Pain
+                    </button>
+<button class="px-6 py-3 rounded-full bg-gray-100 text-text-main font-semibold text-sm border border-gray-100 transition-all active:scale-95">
+                        Headache
+                    </button>
+<button class="px-6 py-3 rounded-full bg-accent-pink border border-primary text-primary font-bold text-sm transition-all active:scale-95">
+                        Fatigue
+                    </button>
+</div>
+</section>
+</main>
+<footer class="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-white via-white/95 to-transparent pt-10 flex justify-center">
+<button class="w-full max-w-md h-16 bg-primary text-white rounded-full font-bold text-lg shadow-lg shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                Done
+                <span class="material-symbols-outlined font-bold">arrow_forward</span>
+</button>
+</footer>
+</div>
+
+</body></html>

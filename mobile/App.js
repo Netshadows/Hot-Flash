@@ -23,8 +23,12 @@ import { QuizzesScreen } from './src/screens/QuizzesScreen';
 import { QuizFlowScreen } from './src/screens/QuizFlowScreen';
 import { DailyActivityScreen } from './src/screens/DailyActivityScreen';
 import { DailyPulseScreen } from './src/screens/DailyPulseScreen';
+import { DailyJournalScreen } from './src/screens/DailyJournalScreen';
+import { JournalHistoryScreen } from './src/screens/JournalHistoryScreen';
 import { CalendarScreen } from './src/screens/CalendarScreen';
 import { MacroTimelineScreen } from './src/screens/MacroTimelineScreen';
+import { PreferencesScreen } from './src/screens/PreferencesScreen';
+import { IntegrationsScreen } from './src/screens/IntegrationsScreen';
 import { COLORS } from './src/constants/theme';
 import { ScoreProvider } from './src/context/ScoreContext';
 import { UserProvider } from './src/context/UserContext';
@@ -71,8 +75,12 @@ export default function App() {
                         <Stack.Screen name="QuizFlow" component={QuizFlowScreen} />
                         <Stack.Screen name="DailyActivity" component={DailyActivityScreen} />
                         <Stack.Screen name="DailyPulse" component={DailyPulseScreen} options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="DailyJournal" component={DailyJournalScreen} options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="JournalHistory" component={JournalHistoryScreen} />
                         <Stack.Screen name="Calendar" component={CalendarScreen} />
                         <Stack.Screen name="MacroTimeline" component={MacroTimelineScreen} />
+                        <Stack.Screen name="Preferences" component={PreferencesScreen} />
+                        <Stack.Screen name="Integrations" component={IntegrationsScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>
             </ScoreProvider>

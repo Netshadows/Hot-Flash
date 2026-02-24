@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Animated, Keyboard, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { useScore } from '../context/ScoreContext';
+import { useUser } from '../context/UserContext';
 
 const AnimatedPill = ({ item, isSelected, onPress }) => {
     const scaleAnim = useRef(new Animated.Value(isSelected ? 1.05 : 1)).current;
@@ -31,7 +32,80 @@ const AnimatedPill = ({ item, isSelected, onPress }) => {
     );
 };
 
+const TRACK_SYMPTOMS = {
+    hot_flashes: [
+        { id: 'hot_flashes', label: 'Hot Flashes' },
+        { id: 'night_sweats', label: 'Night Sweats' },
+        { id: 'palpitations', label: 'Heart Palpitations' },
+    ],
+    sleep: [
+        { id: 'insomnia', label: 'Insomnia' },
+        { id: 'waking_early', label: 'Waking Early' },
+        { id: 'night_sweats', label: 'Night Sweats' },
+        { id: 'fatigue', label: 'Fatigue' },
+    ],
+    weight: [
+        { id: 'weight_gain', label: 'Weight Gain' },
+        { id: 'bloating', label: 'Bloating' },
+        { id: 'metabolism', label: 'Metabolism Shift' },
+    ],
+    energy: [
+        { id: 'low_energy', label: 'Low Energy' },
+        { id: 'joint_pain', label: 'Joint Pain' },
+        { id: 'stiffness', label: 'Muscle Stiffness' },
+    ],
+    mood: [
+        { id: 'mood_swings', label: 'Mood Swings' },
+        { id: 'anxiety', label: 'Anxiety' },
+        { id: 'irritability', label: 'Irritability' },
+        { id: 'brain_fog', label: 'Brain Fog' },
+        { id: 'memory', label: 'Memory Lapses' },
+        { id: 'low_libido', label: 'Low Libido' },
+    ],
+};
+
+const DEFAULT_SYMPTOMS = [
+    { id: 'hot_flashes', label: 'Hot Flashes' },
+    { id: 'night_sweats', label: 'Night Sweats' },
+    { id: 'joint_pain', label: 'Joint Pain' },
+    { id: 'mood_swings', label: 'Mood Swings' },
+    { id: 'brain_fog', label: 'Brain Fog' },
+    { id: 'low_libido', label: 'Low Libido' },
+];
+
 export const DailyPulseScreen = ({ navigation }) => {
+    const { triggerDopamine } = useScore();
+    const { activeTracks } = useUser();
+
+    const displaySymptoms = useMemo(() => {
+        if (!activeTracks) return DEFAULT_SYMPTOMS;
+
+        const combined = [];
+        const seenIds = new Set();
+
+        Object.keys(activeTracks).forEach(track => {
+            if (activeTracks[track] && TRACK_SYMPTOMS[track]) {
+                TRACK_SYMPTOMS[track].forEach(sym => {
+                    if (!seenIds.has(sym.id)) {
+                        seenIds.add(sym.id);
+                        combined.push(sym);
+                    }
+                });
+            }
+        });
+
+        if (combined.length < 4) {
+            DEFAULT_SYMPTOMS.forEach(ds => {
+                if (!seenIds.has(ds.id)) {
+                    seenIds.add(ds.id);
+                    combined.push(ds);
+                }
+            });
+        }
+
+        return combined;
+    }, [activeTracks]);
+
     const categories = [
         {
             title: "Positives",
@@ -46,15 +120,7 @@ export const DailyPulseScreen = ({ navigation }) => {
         },
         {
             title: "Symptoms",
-            items: [
-                { id: 'hot_flash', label: 'Hot Flashes' },
-                { id: 'night_sweats', label: 'Night Sweats' },
-                { id: 'brain_fog', label: 'Brain Fog' },
-                { id: 'joint_pain', label: 'Joint Pain' },
-                { id: 'mood_swings', label: 'Mood Swings' },
-                { id: 'headaches', label: 'Headaches' },
-                { id: 'low_libido', label: 'Low Libido' }
-            ]
+            items: displaySymptoms
         },
         {
             title: "Lifestyle Elements",
@@ -77,8 +143,6 @@ export const DailyPulseScreen = ({ navigation }) => {
 
     const saveScale = useRef(new Animated.Value(0)).current;
     const saveOpacity = useRef(new Animated.Value(0)).current;
-
-    const { triggerDopamine } = useScore();
 
     const handlePillPress = (item, categoryTitle) => {
         // If not selected, initialize default, then open modal

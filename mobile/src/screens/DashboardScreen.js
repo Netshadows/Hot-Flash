@@ -3,12 +3,13 @@ import { View, ScrollView, StyleSheet, Dimensions, Text, TouchableOpacity, Image
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppText } from '../components/Typography';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
-import { Svg, Circle } from 'react-native-svg';
+import { DynamicRadialGraph } from '../components/DynamicRadialGraph';
 import { HealthKitService } from '../services/HealthKitService';
 import { DataStreamType } from '../models/DeviceData';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '../context/UserContext';
 import { PaywallModal } from '../components/PaywallModal';
+import { getMonthlySymptoms } from '../services/firebase';
 
 const { width } = Dimensions.get('window');
 
@@ -17,10 +18,11 @@ export const DashboardScreen = ({ navigation }) => {
     const [ritualState, setRitualState] = useState(0);
     const [ringProgress, setRingProgress] = useState(0.0);
     const [healthData, setHealthData] = useState([]);
+    const [monthlySymptoms, setMonthlySymptoms] = useState([]);
     const [isLoadingHealthData, setIsLoadingHealthData] = useState(true);
     const [showPaywall, setShowPaywall] = useState(false);
 
-    const { tier, upgradeTier } = useUser();
+    const { user, tier, upgradeTier } = useUser();
 
     useEffect(() => {
         const loadHealthData = async () => {
@@ -29,62 +31,126 @@ export const DashboardScreen = ({ navigation }) => {
                 const data = await HealthKitService.fetchLatestData();
                 setHealthData(data);
             }
+
+            // Load simulated 30 day symptom tracking
+            const symptoms = await getMonthlySymptoms(user?.uid || 'anonymous');
+            setMonthlySymptoms(symptoms);
+
             setIsLoadingHealthData(false);
         }
         loadHealthData();
-    }, []);
+    }, [user]);
 
-    const DAILY_ACTIVITIES = [
-        { id: '1', title: 'Nutrition', color: '#FF7F50', icon: 'nutrition-outline', completed: false, description: 'Learn 3 foods that can help balance estrogen levels.' },
-        { id: '2', title: 'Mindfulness', color: '#87CEFA', icon: 'leaf-outline', completed: true, description: 'A 2-minute breathing exercise to lower cortisol.' },
-        { id: '3', title: 'Check-In', color: '#DDA0DD', icon: 'clipboard-outline', completed: false, description: 'Log your symptoms to refine your clinical baseline.' },
-        { id: '4', title: 'Movement', color: '#48D1CC', icon: 'fitness-outline', completed: false, description: 'A quick 5-minute stretch routine for joint stiffness.' },
+    const TODAYS_PLAN = [
+        {
+            id: 'log',
+            title: 'Log your symptoms',
+            cardStyle: { backgroundColor: COLORS.surface },
+            iconName: 'add',
+            iconSize: 20,
+            iconColor: '#FFF',
+            iconBg: COLORS.primary,
+            onPress: () => navigation.navigate('DailyPulse'),
+        },
+        {
+            id: 'journal',
+            title: 'Daily Journal',
+            cardStyle: { backgroundColor: COLORS.insightBlue, borderColor: COLORS.accentBlue, borderWidth: 2 },
+            iconName: 'book',
+            iconSize: 18,
+            iconColor: COLORS.primary,
+            iconBg: 'rgba(255,255,255,0.8)',
+            onPress: () => navigation.navigate('DailyJournal'),
+        },
+
+        {
+            id: 'nutrition',
+            title: 'Nutrition',
+            cardStyle: { backgroundColor: '#FFF5F6', borderColor: '#FFE4E8', borderWidth: 2 },
+            iconName: 'nutrition-outline',
+            iconSize: 18,
+            iconColor: '#FF7F50',
+            iconBg: 'rgba(255,255,255,0.8)',
+            completed: false,
+            onPress: () => navigation.navigate('DailyActivity', { activity: { title: 'Nutrition', color: '#FF7F50', icon: 'nutrition-outline', completed: false, description: 'Learn 3 foods that can help balance estrogen levels.' } }),
+        },
+        {
+            id: 'mindfulness',
+            title: 'Mindfulness',
+            cardStyle: { backgroundColor: '#F0F8FF', borderColor: '#D4E6F1', borderWidth: 2, opacity: 0.7 },
+            iconName: 'leaf-outline',
+            iconSize: 18,
+            iconColor: '#87CEFA',
+            iconBg: 'rgba(255,255,255,0.8)',
+            completed: true,
+            onPress: () => navigation.navigate('DailyActivity', { activity: { title: 'Mindfulness', color: '#87CEFA', icon: 'leaf-outline', completed: true, description: 'A 2-minute breathing exercise to lower cortisol.' } }),
+        },
+        {
+            id: 'movement',
+            title: 'Movement',
+            cardStyle: { backgroundColor: '#E0FFFF', borderColor: '#B0E0E6', borderWidth: 2 },
+            iconName: 'fitness-outline',
+            iconSize: 18,
+            iconColor: '#48D1CC',
+            iconBg: 'rgba(255,255,255,0.8)',
+            completed: false,
+            onPress: () => navigation.navigate('DailyActivity', { activity: { title: 'Movement', color: '#48D1CC', icon: 'fitness-outline', completed: false, description: 'A quick 5-minute stretch routine for joint stiffness.' } }),
+        },
     ];
 
-    const renderStory = (activity) => (
+    const renderActionCard = (item) => (
         <TouchableOpacity
-            key={activity.id}
-            style={[styles.storyContainer, activity.completed && { opacity: 0.6 }]}
+            key={item.id}
+            style={[styles.actionCard, item.cardStyle]}
+            onPress={item.onPress}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('DailyActivity', { activity })}
         >
-            <View style={[styles.storyRing, { borderColor: activity.color }]}>
-                <View style={[styles.storyImage, { backgroundColor: activity.color }]}>
-                    <Ionicons name={activity.icon} size={32} color="#FFF" />
-                </View>
-                {activity.completed && (
-                    <View style={styles.completedBadge}>
+            <View>
+                <AppText style={styles.actionCardTitle}>{item.title}</AppText>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                {item.completed ? (
+                    <View style={styles.completedBadgeMinimal}>
                         <Ionicons name="checkmark" size={14} color="#FFF" />
                     </View>
+                ) : (
+                    <View /> /* Empty spacer */
                 )}
+                <View style={[styles.actionCardIconWrap, { backgroundColor: item.iconBg }]}>
+                    <Ionicons name={item.iconName} size={item.iconSize} color={item.iconColor} />
+                </View>
             </View>
-            <AppText variant="caption" style={[styles.storyTitle, activity.completed && { color: '#999' }]}>
-                {activity.title}
-            </AppText>
         </TouchableOpacity>
     );
 
     return (
         <View style={styles.container}>
             <LinearGradient
-                colors={['rgba(255, 88, 100, 0.08)', 'rgba(255, 182, 193, 0.1)']}
+                colors={[COLORS.accentPink, COLORS.background]}
                 style={StyleSheet.absoluteFillObject}
             />
 
             <ScrollView contentContainerStyle={styles.content}>
                 {/* Top Bar Navigation */}
                 <View style={styles.topBar}>
-                    <TouchableOpacity style={styles.avatarPlaceholder}>
-                        <AppText style={styles.avatarText}>J</AppText>
+                    <TouchableOpacity
+                        style={styles.profileButton}
+                        onPress={() => navigation.navigate('Preferences')}
+                    >
+                        <Image
+                            source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop' }}
+                            style={styles.profileImage}
+                        />
+                        <AppText style={styles.profileName}>{user?.firstName || user?.displayName?.split(' ')[0] || 'Jane'}</AppText>
                     </TouchableOpacity>
 
-                    {/* Fun Duolingo-style Streak Counter */}
-                    <View style={styles.streakBadge}>
-                        <AppText style={{ fontSize: 18, marginRight: 4 }}>🔥</AppText>
-                        <AppText style={{ fontWeight: '800', color: '#FF7F50', fontSize: 16 }}>14</AppText>
-                    </View>
-
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {/* Fun Duolingo-style Streak Counter */}
+                        <View style={[styles.streakBadge, { marginRight: SPACING.sm }]}>
+                            <AppText style={{ fontSize: 18, marginRight: 4 }}>🔥</AppText>
+                            <AppText style={{ fontWeight: '800', color: '#FF7F50', fontSize: 16 }}>14</AppText>
+                        </View>
+
                         <TouchableOpacity style={styles.calendarIcon} onPress={() => navigation.navigate('Community')}>
                             <AppText style={{ fontSize: 24 }}>💬</AppText>
                         </TouchableOpacity>
@@ -97,27 +163,35 @@ export const DashboardScreen = ({ navigation }) => {
                     </View>
                 </View>
 
-                {/* Center Stage State */}
-                <View style={styles.centerStageContainer}>
-                    <View style={styles.stageCircle}>
-                        <AppText variant="heading2" style={styles.stageTitle}>Late Perimenopause</AppText>
-                        <AppText variant="caption" style={styles.stageSubtitle}>Cycle Day 14</AppText>
+                {/* Main Status Card (Stitch Inspired) */}
+                <View style={[styles.mainStatusCard, { paddingTop: SPACING.md }]}>
+                    {/* Dynamic Radial Visualizer */}
+                    <View style={[styles.circleContainer, { marginBottom: SPACING.lg, marginTop: SPACING.sm, height: 260 }]}>
+                        <DynamicRadialGraph
+                            size={240}
+                            lifeStage="perimenopause"
+                            progress={ringProgress}
+                            symptomsData={monthlySymptoms}
+                        />
+                        <View style={styles.circleInner}>
+                            <AppText variant="heading1" style={[styles.ringText, { fontSize: 36 }]}>78</AppText>
+                            <AppText variant="caption" style={styles.stageSubtitle}>Resonance</AppText>
+                        </View>
                     </View>
-                    <TouchableOpacity
-                        style={styles.logSymptomsButton}
-                        onPress={() => navigation.navigate('DailyPulse')}
-                        activeOpacity={0.8}
-                    >
-                        <AppText variant="heading2" style={{ color: '#FFF' }}>Daily Pulse</AppText>
-                    </TouchableOpacity>
+
+                    <View style={styles.phaseLabelContainer}>
+                        <AppText variant="caption" style={styles.phaseLabel}>Phase</AppText>
+                    </View>
+                    <AppText variant="heading1" style={{ textAlign: 'center', marginBottom: 4 }}>Late Menopausal Transition</AppText>
+                    <AppText style={{ textAlign: 'center', color: COLORS.textMuted, marginBottom: SPACING.xs }}>Fluctuating hormone levels expected</AppText>
                 </View>
 
-                {/* Daily Stories (Instagram Style -> Interactive) */}
-                <View style={styles.feedHeader}>
-                    <AppText variant="heading2">Daily Plan</AppText>
+                {/* Unified Today's Plan */}
+                <View style={styles.insightsHeader}>
+                    <AppText variant="heading2" style={{ fontSize: 18 }}>Today's Plan</AppText>
                 </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesWrapper} contentContainerStyle={styles.storiesContainer}>
-                    {DAILY_ACTIVITIES.map(renderStory)}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsContainer}>
+                    {TODAYS_PLAN.map(item => renderActionCard(item))}
                 </ScrollView>
 
                 {/* Insight Cards */}
@@ -141,25 +215,7 @@ export const DashboardScreen = ({ navigation }) => {
                     </View>
                 </View>
 
-                {/* Clinical Report Button (Gated) */}
-                <TouchableOpacity
-                    style={[styles.logSymptomsButton, { backgroundColor: '#FFB6C1', marginTop: SPACING.md }]}
-                    onPress={() => {
-                        if (tier === 'free') {
-                            setShowPaywall(true);
-                        } else {
-                            navigation.navigate('HealthReport');
-                        }
-                    }}
-                    activeOpacity={0.8}
-                >
-                    <View style={styles.logSymptomsContent}>
-                        <AppText variant="heading2" style={{ color: COLORS.textMain }}>View Clinical Report</AppText>
-                        <AppText variant="caption" style={{ color: COLORS.textMain }}>
-                            Generate PDF for your doctor
-                        </AppText>
-                    </View>
-                </TouchableOpacity>
+                <View style={{ height: SPACING.md }} />
 
                 {/* Quizzes Button */}
                 <TouchableOpacity
@@ -207,18 +263,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: SPACING.xl,
     },
-    avatarPlaceholder: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#FFB6C1', // Simple pink avatar
+    profileButton: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: COLORS.surface,
+        padding: 4,
+        paddingRight: 16,
+        borderRadius: 30,
+        ...COLORS.shadowSoft,
     },
-    avatarText: {
-        color: '#FFF',
-        fontWeight: 'bold',
-        fontSize: 18,
+    profileImage: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        marginRight: 8,
+    },
+    profileName: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: COLORS.text,
     },
     streakBadge: {
         flexDirection: 'row',
@@ -230,31 +293,29 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#FFDAB9',
     },
+    headerIcons: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     calendarIcon: {
         padding: SPACING.xs,
+        marginRight: SPACING.sm,
     },
-    centerStageContainer: {
-        alignItems: 'center',
-        marginBottom: SPACING.xl,
+    settingsIcon: {
+        padding: SPACING.xs,
     },
-    stageCircle: {
-        width: 240,
-        height: 240,
-        borderRadius: 120,
-        backgroundColor: '#FFFFFF',
-        borderWidth: 8,
-        borderColor: 'rgba(255, 88, 100, 0.1)',
+    circleContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: -24, // Overlap with button
-        shadowColor: 'rgba(255, 88, 100, 0.15)',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 1,
-        shadowRadius: 20,
-        elevation: 8,
-        zIndex: 1,
+        marginVertical: SPACING.lg,
+        height: 220,
     },
-    stageTitle: {
+    circleInner: {
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    ringText: {
         color: COLORS.primary,
         textAlign: 'center',
         marginBottom: 4,
@@ -262,55 +323,63 @@ const styles = StyleSheet.create({
     stageSubtitle: {
         color: '#757575',
     },
-    logSymptomsButton: {
-        backgroundColor: COLORS.primary,
-        paddingVertical: 16,
-        paddingHorizontal: 32,
-        borderRadius: 30,
-        shadowColor: COLORS.primary,
+    mainStatusCard: {
+        backgroundColor: COLORS.surface,
+        borderRadius: RADIUS.xxl,
+        padding: SPACING.xl,
+        alignItems: 'center',
+        shadowColor: COLORS.shadow,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 10,
-        elevation: 6,
-        zIndex: 2,
+        shadowOpacity: 1,
+        shadowRadius: 20,
+        elevation: 4,
+        marginBottom: SPACING.xl,
+        borderWidth: 1,
+        borderColor: COLORS.surfaceBorder,
     },
-    feedHeader: {
+    phaseLabelContainer: {
+        marginBottom: SPACING.sm,
+    },
+    phaseLabel: {
+        color: COLORS.textMain,
+    },
+    insightsHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: SPACING.md,
     },
-    storiesWrapper: {
-        marginBottom: SPACING.xl,
-        marginHorizontal: -SPACING.lg, // Bleed edge-to-edge
+    insightsContainer: {
+        gap: SPACING.sm,
+        paddingBottom: SPACING.lg,
     },
-    storiesContainer: {
-        paddingHorizontal: SPACING.lg,
-        gap: 16,
-        justifyContent: 'center',
-        flexGrow: 1,
+    actionCard: {
+        width: 140,
+        height: 140,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.md,
+        justifyContent: 'space-between',
+        shadowColor: COLORS.shadow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+        elevation: 2,
     },
-    storyContainer: {
+    actionCardTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        lineHeight: 18,
+        color: COLORS.textMain,
+    },
+    actionCardIconWrap: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
         alignItems: 'center',
-        width: 76,
-    },
-    storyRing: {
-        width: 76,
-        height: 76,
-        borderRadius: 38,
-        borderWidth: 2.5,
-        alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 8,
+        alignSelf: 'flex-end',
     },
-    storyImage: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    completedBadge: {
-        position: 'absolute',
-        bottom: -2,
-        right: -2,
+    completedBadgeMinimal: {
         backgroundColor: '#4CAF50',
         borderRadius: 12,
         width: 24,
@@ -319,11 +388,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderWidth: 2,
         borderColor: '#FFF',
-    },
-    storyTitle: {
-        textAlign: 'center',
-        color: '#4A4A4A',
-        fontWeight: '600',
     },
     card: {
         backgroundColor: COLORS.surface,
