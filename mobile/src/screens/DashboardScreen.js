@@ -54,7 +54,26 @@ const STAGE_CONFIG = {
 
 const { width } = Dimensions.get('window');
 
+// Helper to get formatted week days
+const getWeekDays = () => {
+    const today = new Date();
+    const days = [];
+    for (let i = -3; i <= 3; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        days.push({
+            date: date,
+            dayName: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+            dayNum: date.getDate(),
+            isToday: i === 0
+        });
+    }
+    return days;
+};
+
 export const DashboardScreen = ({ navigation }) => {
+    const WEEK_DAYS = getWeekDays();
+
     // 0 = Morning, 1 = Afternoon, 2 = Evening
     const [ritualState, setRitualState] = useState(0);
     const [ringProgress, setRingProgress] = useState(0.0);
@@ -213,45 +232,45 @@ export const DashboardScreen = ({ navigation }) => {
         {
             id: 'journal',
             title: 'Daily Journal',
-            cardStyle: { backgroundColor: COLORS.insightBlue, borderColor: COLORS.accentBlue, borderWidth: 2 },
+            cardStyle: { backgroundColor: '#F5F3FF', borderColor: '#DDD6FE', borderWidth: 1 },
             iconName: 'book',
-            iconSize: 18,
-            iconColor: COLORS.primary,
-            iconBg: 'rgba(255,255,255,0.8)',
+            iconSize: 20,
+            iconColor: '#7C3AED',
+            iconBg: '#EDE9FE',
             onPress: () => navigation.navigate('DailyJournal'),
         },
         {
             id: 'nutrition',
             title: 'Nutrition',
-            cardStyle: { backgroundColor: '#FFF5F6', borderColor: '#FFE4E8', borderWidth: 2 },
-            iconName: 'nutrition-outline',
-            iconSize: 18,
-            iconColor: '#FF7F50',
-            iconBg: 'rgba(255,255,255,0.8)',
+            cardStyle: { backgroundColor: '#FFF7ED', borderColor: '#FFEDD5', borderWidth: 1 },
+            iconName: 'leaf',
+            iconSize: 20,
+            iconColor: '#F97316',
+            iconBg: '#FFEDD5',
             completed: false,
-            onPress: () => navigation.navigate('NutritionActivity', { activity: { id: 'nutrition', title: 'Nutrition', color: '#FF7F50', icon: 'nutrition-outline', completed: false, description: 'Learn 3 foods that can help balance estrogen levels.' } }),
+            onPress: () => navigation.navigate('NutritionActivity', { activity: { id: 'nutrition', title: 'Nutrition', color: '#F97316', icon: 'leaf', completed: false, description: 'Learn 3 foods that can help balance estrogen levels.' } }),
         },
         {
             id: 'mindfulness_activity',
             title: 'Mindfulness',
-            cardStyle: { backgroundColor: '#F0F8FF', borderColor: '#D4E6F1', borderWidth: 2, opacity: 0.7 },
-            iconName: 'leaf-outline',
-            iconSize: 18,
-            iconColor: '#87CEFA',
-            iconBg: 'rgba(255,255,255,0.8)',
+            cardStyle: { backgroundColor: '#F0F9FF', borderColor: '#E0F2FE', borderWidth: 1 },
+            iconName: 'water',
+            iconSize: 20,
+            iconColor: '#0EA5E9',
+            iconBg: '#E0F2FE',
             completed: true,
-            onPress: () => navigation.navigate('MindfulnessActivity', { activity: { id: 'mindfulness_activity', title: 'Mindfulness', color: '#87CEFA', icon: 'leaf-outline', completed: true, description: 'A 2-minute breathing exercise to lower cortisol.' } }),
+            onPress: () => navigation.navigate('MindfulnessActivity', { activity: { id: 'mindfulness_activity', title: 'Mindfulness', color: '#0EA5E9', icon: 'water', completed: true, description: 'A 2-minute breathing exercise to lower cortisol.' } }),
         },
         {
             id: 'movement',
             title: 'Movement',
-            cardStyle: { backgroundColor: '#E0FFFF', borderColor: '#B0E0E6', borderWidth: 2 },
-            iconName: 'fitness-outline',
-            iconSize: 18,
-            iconColor: '#48D1CC',
-            iconBg: 'rgba(255,255,255,0.8)',
+            cardStyle: { backgroundColor: '#F0FDFA', borderColor: '#CCFBF1', borderWidth: 1 },
+            iconName: 'fitness',
+            iconSize: 20,
+            iconColor: '#0D9488',
+            iconBg: '#CCFBF1',
             completed: false,
-            onPress: () => navigation.navigate('MovementActivity', { activity: { title: 'Movement', color: '#48D1CC', icon: 'fitness-outline', completed: false, description: 'A quick 5-minute stretch routine for joint stiffness.' } }),
+            onPress: () => navigation.navigate('MovementActivity', { activity: { title: 'Movement', color: '#0D9488', icon: 'fitness', completed: false, description: 'A quick 5-minute stretch routine for joint stiffness.' } }),
         },
     ];
 
@@ -320,38 +339,80 @@ export const DashboardScreen = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
 
+            {/* Weekly Calendar Bar */}
+            <View style={styles.calendarBarContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.calendarScroll}>
+                    {WEEK_DAYS.map((day, idx) => (
+                        <View key={idx} style={[styles.calendarDayCard, day.isToday && styles.calendarDayToday]}>
+                            <AppText variant="caption" style={[styles.calendarDayName, day.isToday && styles.calendarDayTextActive]}>
+                                {day.dayName}
+                            </AppText>
+                            <View style={[styles.calendarDayCircle, day.isToday && styles.calendarDayCircleActive]}>
+                                <AppText style={[styles.calendarDayNum, day.isToday && styles.calendarDayTextActive]}>
+                                    {day.dayNum}
+                                </AppText>
+                            </View>
+                            {day.isToday && <View style={styles.todayDot} />}
+                        </View>
+                    ))}
+                </ScrollView>
+            </View>
+
             <ScrollView contentContainerStyle={styles.content}>
-                {/* Phase Info Header */}
-                <View style={{ marginBottom: SPACING.md }}>
-                    <AppText variant="caption" style={{ color: COLORS.primary, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
-                        Phase
-                    </AppText>
-                    <AppText variant="heading1" style={{ textAlign: 'left', marginBottom: 4 }}>{currentStage}</AppText>
-                    <AppText style={{ textAlign: 'left', color: COLORS.textMuted }}>{stageConfig.subtext}</AppText>
+                {/* Phase Info Header (Refactored to Card) */}
+                <View style={styles.phaseCard}>
+                    <View style={styles.phaseCardHeader}>
+                        <View>
+                            <AppText variant="caption" style={styles.phaseLabel}>CURRENT PHASE</AppText>
+                            <AppText variant="heading2" style={styles.phaseTitle}>{currentStage}</AppText>
+                        </View>
+                        <View style={styles.vitalityScoreBadge}>
+                            <AppText style={styles.vitalityScoreValue}>78</AppText>
+                            <AppText variant="caption" style={styles.vitalityScoreLabel}>VITALITY</AppText>
+                        </View>
+                    </View>
+                    <AppText style={styles.phaseSubtext}>{stageConfig.subtext}</AppText>
                 </View>
 
-                {/* Main Status Card (Stitch Inspired) */}
-                <View style={[styles.mainStatusCard, { paddingTop: SPACING.md, paddingHorizontal: SPACING.sm }]}>
-                    {/* Dynamic Radial Visualizer */}
+
+                {/* Dynamic Radial Visualizer Container */}
+                <View style={[styles.mainStatusCard, { paddingTop: SPACING.sm, paddingHorizontal: SPACING.sm }]}>
                     <TouchableOpacity
                         activeOpacity={0.9}
-                        style={[styles.circleContainer, { marginBottom: SPACING.md, marginTop: SPACING.sm, height: 280 }]}
+                        style={[styles.circleContainer, { marginBottom: SPACING.md, marginTop: 0, height: 260 }]}
                         onPress={() => setShowLegend(true)}
                     >
                         <DynamicRadialGraph
-                            size={280}
+                            size={260}
                             lifeStage={stageConfig.graphStage}
                             progress={ringProgress}
                             symptomsData={monthlySymptoms}
                         />
                         <View style={styles.circleInner}>
-                            <AppText variant="heading1" style={[styles.ringText, { fontSize: 36 }]}>78</AppText>
-                            <AppText variant="caption" style={styles.stageSubtitle}>Resonance</AppText>
+                            <Ionicons name="pulse" size={40} color={COLORS.primary} style={{ opacity: 0.2, marginBottom: -10 }} />
+                            <AppText variant="heading1" style={[styles.ringText, { fontSize: 42 }]}>78</AppText>
+                            <AppText variant="caption" style={styles.stageSubtitle}>RESONANCE</AppText>
                         </View>
                     </TouchableOpacity>
                 </View>
 
-                {/* Interactive Insights (Top area below graph) */}
+                {/* Symptom Intensity Mini-Summary */}
+                <View style={styles.intensityContainer}>
+                    <View style={styles.intensityHeader}>
+                        <AppText variant="heading2" style={styles.sectionTitle}>Symptom Pulse</AppText>
+                        <AppText variant="caption" style={styles.intensitySub}>LAST 7 DAYS</AppText>
+                    </View>
+                    <View style={styles.miniChartContainer}>
+                        {[40, 65, 30, 85, 55, 70, 45].map((val, i) => (
+                            <View key={i} style={styles.chartBarWrapper}>
+                                <View style={[styles.chartBar, { height: (val / 100) * 40, backgroundColor: i === 6 ? COLORS.primary : 'rgba(0,0,0,0.1)' }]} />
+                                <AppText style={styles.chartBarLabel}>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</AppText>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Interactive Insights */}
                 <View style={styles.insightsHeaderRow}>
                     <TouchableOpacity
                         style={[styles.smallInsightCard, { backgroundColor: '#F0F4FF', borderColor: '#D0DCFF', borderWidth: 1 }]}
@@ -369,6 +430,7 @@ export const DashboardScreen = ({ navigation }) => {
                         <AppText style={styles.smallInsightHeadline}>Daily Tip</AppText>
                     </TouchableOpacity>
                 </View>
+
 
                 {/* Unified Daily Activities (Grid Layout) */}
                 <View style={styles.insightsHeader}>
@@ -610,6 +672,148 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    calendarBarContainer: {
+        backgroundColor: COLORS.background,
+        paddingVertical: SPACING.md,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
+    },
+    calendarScroll: {
+        paddingHorizontal: SPACING.lg,
+    },
+    calendarDayCard: {
+        alignItems: 'center',
+        marginRight: 20,
+        paddingVertical: 4,
+        width: 45,
+    },
+    calendarDayToday: {
+        // Highlighting today
+    },
+    calendarDayName: {
+        color: COLORS.textMuted,
+        fontWeight: '600',
+        fontSize: 10,
+        marginBottom: 8,
+    },
+    calendarDayCircle: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+    },
+    calendarDayCircleActive: {
+        backgroundColor: COLORS.primary,
+        ...COLORS.shadowSoft,
+    },
+    calendarDayNum: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: COLORS.textMain,
+    },
+    calendarDayTextActive: {
+        color: '#FFF',
+    },
+    todayDot: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: COLORS.primary,
+        marginTop: 6,
+    },
+    phaseCard: {
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        borderRadius: RADIUS.lg,
+        padding: SPACING.md,
+        marginBottom: SPACING.lg,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.5)',
+    },
+    phaseCardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 8,
+    },
+    phaseLabel: {
+        color: COLORS.primary,
+        fontWeight: '700',
+        letterSpacing: 1,
+        marginBottom: 2,
+    },
+    phaseTitle: {
+        fontSize: 22,
+        fontWeight: '800',
+    },
+    phaseSubtext: {
+        color: COLORS.textMuted,
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    vitalityScoreBadge: {
+        backgroundColor: '#FFF',
+        borderRadius: RADIUS.md,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        alignItems: 'center',
+        ...COLORS.shadowSoft,
+    },
+    vitalityScoreValue: {
+        fontSize: 24,
+        fontWeight: '900',
+        color: COLORS.primary,
+        lineHeight: 28,
+    },
+    vitalityScoreLabel: {
+        fontSize: 8,
+        fontWeight: '700',
+        color: COLORS.textMuted,
+    },
+    intensityContainer: {
+        backgroundColor: '#FFF',
+        borderRadius: RADIUS.lg,
+        padding: SPACING.md,
+        marginBottom: SPACING.lg,
+        ...COLORS.shadowSoft,
+    },
+    intensityHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+        marginBottom: SPACING.sm,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+    },
+    intensitySub: {
+        color: COLORS.textMuted,
+        fontWeight: '600',
+        fontSize: 10,
+    },
+    miniChartContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        height: 60,
+        paddingTop: 10,
+    },
+    chartBarWrapper: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    chartBar: {
+        width: 12,
+        borderRadius: 6,
+        marginBottom: 8,
+    },
+    chartBarLabel: {
+        fontSize: 10,
+        color: COLORS.textMuted,
+        fontWeight: '600',
+    },
     ringText: {
         color: COLORS.primary,
         textAlign: 'center',
@@ -631,12 +835,6 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.xl,
         borderWidth: 1,
         borderColor: COLORS.surfaceBorder,
-    },
-    phaseLabelContainer: {
-        marginBottom: SPACING.sm,
-    },
-    phaseLabel: {
-        color: COLORS.textMain,
     },
     insightsHeader: {
         flexDirection: 'row',
@@ -662,6 +860,7 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 2,
         marginBottom: SPACING.md,
+        borderWidth: 1, // Added border for grid definition
     },
     actionCardTitle: {
         fontSize: 14,
