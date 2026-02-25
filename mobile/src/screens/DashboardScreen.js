@@ -303,8 +303,8 @@ export const DashboardScreen = ({ navigation }) => {
                     ]
                 }}>
                     <TouchableOpacity style={styles.streakBadge} onPress={handleStreakPress} activeOpacity={0.7}>
-                        <AppText style={{ fontSize: 18, marginRight: 4 }}>🔥</AppText>
-                        <AppText style={{ fontWeight: '800', color: '#FF7F50', fontSize: 16 }}>{streak}</AppText>
+                        <Ionicons name="flame" size={40} color="#FF7F50" style={{ position: 'absolute', opacity: 0.15 }} />
+                        <AppText style={styles.streakCountText}>{streak}</AppText>
                     </TouchableOpacity>
                 </Animated.View>
 
@@ -570,14 +570,23 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     streakBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        width: 64,
+        height: 64,
+        borderRadius: 32,
         backgroundColor: '#FFF5EE',
-        paddingHorizontal: SPACING.md,
-        paddingVertical: 8,
-        borderRadius: RADIUS.full,
-        borderWidth: 1,
-        borderColor: '#FFDAB9',
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...COLORS.shadowSoft,
+        shadowOpacity: 0.15,
+        elevation: 3,
+    },
+    streakCountText: {
+        fontWeight: '900',
+        color: '#FF7F50',
+        fontSize: 20,
+        textShadowColor: 'rgba(255, 127, 80, 0.2)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 2,
     },
     headerIcons: {
         flexDirection: 'row',
