@@ -5,9 +5,11 @@ import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '../context/UserContext';
+import { ProfileStudioModal } from '../components/ProfileStudioModal';
 
 export const PreferencesScreen = ({ navigation }) => {
     const { activeTracks, toggleTrack, logout } = useUser();
+    const [studioVisible, setStudioVisible] = useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -99,7 +101,21 @@ export const PreferencesScreen = ({ navigation }) => {
                         <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.menuItem}>
+                    <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={() => setStudioVisible(true)}
+                    >
+                        <View style={styles.menuItemLeft}>
+                            <Ionicons name="camera-outline" size={24} color={COLORS.primary} />
+                            <AppText style={styles.menuItemText}>Profile Studio</AppText>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={() => navigation.navigate('NotificationSettings')}
+                    >
                         <View style={styles.menuItemLeft}>
                             <Ionicons name="notifications-outline" size={24} color={COLORS.textMain} />
                             <AppText style={styles.menuItemText}>Notification Settings</AppText>
@@ -124,6 +140,11 @@ export const PreferencesScreen = ({ navigation }) => {
                     <AppText style={styles.logoutText}>Log Out</AppText>
                 </TouchableOpacity>
             </ScrollView>
+
+            <ProfileStudioModal
+                visible={studioVisible}
+                onClose={() => setStudioVisible(false)}
+            />
         </View>
     );
 };

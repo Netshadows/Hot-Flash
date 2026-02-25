@@ -5,15 +5,13 @@ import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 
-export const LoginScreen = ({ navigation, route }) => {
+export const RegisterScreen = ({ navigation, route }) => {
     const { profileData } = route.params || { profileData: {} };
-    const handleLogin = (method) => {
-        console.log(`Logging in via ${method}`);
-        console.log("=== CREATING CLINICAL PROFILE ===");
-        console.log(JSON.stringify(profileData, null, 2));
 
-        // Advance to MainTabs after creating profile with accumulated high-friction data
-        navigation.navigate('MainTabs');
+    const handleRegister = (method) => {
+        console.log(`Registering via ${method}`);
+        // Advance to Paywall after account creation
+        navigation.navigate('Paywall', { profileData, method });
     };
 
     return (
@@ -25,35 +23,32 @@ export const LoginScreen = ({ navigation, route }) => {
 
             <ScrollView contentContainerStyle={styles.content}>
                 <View style={styles.heroSection}>
-                    <View style={styles.logoContainer}>
-                        <Image
-                            source={require('../../assets/logo_app.png')}
-                            style={{ width: 100, height: 100, borderRadius: 20 }}
-                        />
+                    <View style={styles.badge}>
+                        <AppText variant="caption" style={styles.badgeText}>PROTOCOL READY</AppText>
                     </View>
-                    <AppText variant="heading1" style={styles.title}>Lumina</AppText>
+                    <AppText variant="heading1" style={styles.title}>Unlock your plan.</AppText>
                     <AppText variant="body" style={styles.subtitle}>
-                        Evidence-based support for your transition.
+                        Create your account to save your 30-day protocol and start your transformation journey.
                     </AppText>
                 </View>
 
                 <View style={styles.authSection}>
                     <TouchableOpacity
                         style={[styles.authButton, styles.appleButton]}
-                        onPress={() => handleLogin('Apple')}
+                        onPress={() => handleRegister('Apple')}
                         activeOpacity={0.8}
                     >
                         <AppText style={styles.buttonIcon}></AppText>
-                        <AppText style={styles.appleButtonText}>Continue with Apple</AppText>
+                        <AppText style={styles.appleButtonText}>Sign up with Apple</AppText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={[styles.authButton, styles.googleButton]}
-                        onPress={() => handleLogin('Google')}
+                        onPress={() => handleRegister('Google')}
                         activeOpacity={0.8}
                     >
                         <AppText style={styles.buttonIcon}>G</AppText>
-                        <AppText style={styles.googleButtonText}>Continue with Google</AppText>
+                        <AppText style={styles.googleButtonText}>Sign up with Google</AppText>
                     </TouchableOpacity>
 
                     <View style={styles.divider}>
@@ -64,16 +59,16 @@ export const LoginScreen = ({ navigation, route }) => {
 
                     <View style={styles.privacyCard}>
                         <View style={styles.privacyHeader}>
-                            <AppText style={{ fontSize: 20, marginRight: 8 }}>🔒</AppText>
-                            <AppText variant="heading3">Deep Privacy</AppText>
+                            <AppText style={{ fontSize: 20, marginRight: 8 }}>🛡️</AppText>
+                            <AppText variant="heading3">Privacy First</AppText>
                         </View>
                         <AppText variant="caption" style={styles.privacyText}>
-                            Your health data is highly sensitive. We support an Anonymous Mode that locally encrypts your data and separates it from all Personally Identifiable Information (PII).
+                            Your health journey is sacred. We use end-to-end encryption for all wellness markers.
                         </AppText>
                         <Button
                             title="Continue Anonymously"
                             variant="secondary"
-                            onPress={() => handleLogin('Anonymous')}
+                            onPress={() => handleRegister('Anonymous')}
                             style={styles.anonymousButton}
                         />
                     </View>
@@ -82,8 +77,7 @@ export const LoginScreen = ({ navigation, route }) => {
 
             <View style={styles.footer}>
                 <AppText variant="caption" style={styles.disclaimer}>
-                    By continuing, you agree to our Terms of Service & Privacy Policy.
-                    Lumina does not provide medical advice.
+                    By continuing, you agree to our Terms & Privacy Policy.
                 </AppText>
             </View>
         </View>
@@ -101,32 +95,30 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: SPACING.xl * 2,
     },
-    logoContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: COLORS.surface,
-        alignItems: 'center',
-        justifyContent: 'center',
+    badge: {
+        backgroundColor: COLORS.accentPink,
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: RADIUS.sm,
         marginBottom: SPACING.md,
-        shadowColor: COLORS.shadow,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.8,
-        shadowRadius: 10,
-        elevation: 4,
     },
-    logoIcon: {
-        fontSize: 40,
+    badgeText: {
+        color: COLORS.primary,
+        fontWeight: '800',
+        letterSpacing: 1,
     },
     title: {
-        fontSize: 36,
+        fontSize: 32,
         color: COLORS.primary,
-        marginBottom: SPACING.xs,
+        marginBottom: SPACING.sm,
+        textAlign: 'center',
     },
     subtitle: {
         fontSize: 16,
         color: '#757575',
         textAlign: 'center',
+        lineHeight: 22,
+        paddingHorizontal: SPACING.lg,
     },
     authSection: {
         gap: SPACING.md,
@@ -185,7 +177,6 @@ const styles = StyleSheet.create({
         borderRadius: RADIUS.lg,
         borderWidth: 1,
         borderColor: 'rgba(255, 88, 100, 0.2)',
-        marginTop: SPACING.sm,
     },
     privacyHeader: {
         flexDirection: 'row',
@@ -209,6 +200,5 @@ const styles = StyleSheet.create({
     disclaimer: {
         textAlign: 'center',
         color: '#999999',
-        lineHeight: 18,
     }
 });

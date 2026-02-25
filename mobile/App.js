@@ -17,6 +17,10 @@ import { OnboardingInterstitialScreen } from './src/screens/OnboardingInterstiti
 import { OnboardingSymptomGridScreen } from './src/screens/OnboardingSymptomGridScreen';
 import { OnboardingAnalysisScreen } from './src/screens/OnboardingAnalysisScreen';
 import { OnboardingRevealScreen } from './src/screens/OnboardingRevealScreen';
+import { OnboardingProfileScreen } from './src/screens/OnboardingProfileScreen';
+import { OnboardingFrictionScreen } from './src/screens/OnboardingFrictionScreen';
+import { RegisterScreen } from './src/screens/RegisterScreen';
+import { PaywallScreen } from './src/screens/PaywallScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 
 // Main App
@@ -34,6 +38,7 @@ import { CalendarScreen } from './src/screens/CalendarScreen';
 import { MacroTimelineScreen } from './src/screens/MacroTimelineScreen';
 import { OnboardingDataScreen } from './src/screens/OnboardingDataScreen';
 import { PreferencesScreen } from './src/screens/PreferencesScreen';
+import { NotificationSettingsScreen } from './src/screens/NotificationSettingsScreen';
 import { IntegrationsScreen } from './src/screens/IntegrationsScreen';
 import { MindfulnessActivityScreen } from './src/screens/MindfulnessActivityScreen';
 import { MovementActivityScreen } from './src/screens/MovementActivityScreen';
@@ -74,6 +79,8 @@ export default function App() {
                         <Stack.Screen name="OnboardingSymptomGrid" component={OnboardingSymptomGridScreen} />
                         <Stack.Screen name="OnboardingAnalysis" component={OnboardingAnalysisScreen} />
                         <Stack.Screen name="OnboardingReveal" component={OnboardingRevealScreen} />
+                        <Stack.Screen name="Register" component={RegisterScreen} />
+                        <Stack.Screen name="Paywall" component={PaywallScreen} />
                         <Stack.Screen name="Login" component={LoginScreen} />
 
                         {/* Main Dashboard (Stubbing Tabs for now due to missing dependency wrapper) */}
@@ -100,6 +107,9 @@ export default function App() {
                         <Stack.Screen name="MacroTimeline" component={MacroTimelineScreen} />
                         <Stack.Screen name="Preferences" component={PreferencesScreen} />
                         <Stack.Screen name="OnboardingData" component={OnboardingDataScreen} />
+                        <Stack.Screen name="OnboardingProfile" component={OnboardingProfileScreen} />
+                        <Stack.Screen name="OnboardingFriction" component={OnboardingFrictionScreen} />
+                        <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
                         <Stack.Screen name="Integrations" component={IntegrationsScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>

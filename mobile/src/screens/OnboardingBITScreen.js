@@ -4,11 +4,13 @@ import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { SelectGroup } from '../components/SelectGroup';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
+import { useUser } from '../context/UserContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 export const OnboardingBITScreen = ({ navigation, route }) => {
     const { profileData } = route.params || {};
+    const { updateNotifications } = useUser();
     const [clinicalAim, setClinicalAim] = useState('');
     const [notifications, setNotifications] = useState('');
     const [medium, setMedium] = useState([]);
@@ -18,6 +20,7 @@ export const OnboardingBITScreen = ({ navigation, route }) => {
             alert('Please specify your Primary clinical aim and Notification preferences.');
             return;
         }
+        updateNotifications({ workflow: notifications });
         navigation.navigate('OnboardingCBT', {
             profileData: { ...profileData, clinicalAim, notifications }
         });

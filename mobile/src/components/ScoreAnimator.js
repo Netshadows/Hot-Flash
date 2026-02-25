@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View, Dimensions, Easing } from 'react-native';
+import { Animated, StyleSheet, View, Dimensions } from 'react-native';
 import { AppText } from './Typography';
 import { COLORS } from '../constants/theme';
 import { Audio } from 'expo-av';
@@ -31,7 +31,7 @@ export const ScoreAnimator = ({ points, message }) => {
             Animated.parallel([
                 Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
                 Animated.spring(scale, { toValue: 1, friction: 4, tension: 50, useNativeDriver: true }),
-                Animated.timing(translateY, { toValue: height / 2 - 100, duration: 400, easing: Easing.out(Easing.back(1.5)), useNativeDriver: true })
+                Animated.timing(translateY, { toValue: height / 2 - 100, duration: 400, easing: Animated.Easing.out(Animated.Easing.back(1.5)), useNativeDriver: true })
             ]),
             Animated.delay(1000),
             Animated.parallel([

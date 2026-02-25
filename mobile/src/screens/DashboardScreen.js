@@ -8,6 +8,8 @@ import { HealthKitService } from '../services/HealthKitService';
 import { DataStreamType } from '../models/DeviceData';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '../context/UserContext';
+import { useScore } from '../context/ScoreContext';
+import { ProfileStudioModal } from '../components/ProfileStudioModal';
 import { PaywallModal } from '../components/PaywallModal';
 import { getMonthlySymptoms } from '../services/firebase';
 import * as Haptics from 'expo-haptics';
@@ -23,9 +25,32 @@ const CLINICAL_INSIGHTS = [
 const DAILY_TIPS = [
     "A 15-minute walk can help regulate your temperature today.",
     "Try incorporating flax seeds into your breakfast; they are rich in phytoestrogens.",
-    "Keep your bedroom temperature between 60-67°F for optimal sleep quality during perimenopause.",
-    "Remember to stay hydrated! Aim for at least 8 glasses of water today to help manage joint stiffness."
+    "Keep your bedroom temperature between 60-67°F for optimal sleep quality.",
+    "Remember to stay hydrated! Water intake helps manage joint stiffness."
 ];
+
+const STAGE_CONFIG = {
+    'Premenopause': {
+        graphStage: 'menstruating',
+        subtext: "Nurturing your body's natural cycle"
+    },
+    'Early Perimenopause': {
+        graphStage: 'perimenopause',
+        subtext: "Listening to the gentle shifts within"
+    },
+    'Late Perimenopause': {
+        graphStage: 'perimenopause',
+        subtext: "Navigating your season of growth and change"
+    },
+    'Menopause': {
+        graphStage: 'menopause',
+        subtext: "Honoring the wisdom of your journey"
+    },
+    'Postmenopause': {
+        graphStage: 'menopause',
+        subtext: "Embracing the freedom of your next chapter"
+    }
+};
 
 const { width } = Dimensions.get('window');
 
@@ -45,30 +70,118 @@ export const DashboardScreen = ({ navigation }) => {
     const [showTipModal, setShowTipModal] = useState(false);
     const [currentInsightIdx, setCurrentInsightIdx] = useState(0);
     const [currentTipIdx, setCurrentTipIdx] = useState(0);
+    const [studioVisible, setStudioVisible] = useState(false);
 
-    const { user, tier, upgradeTier } = useUser();
+    const { user, tier, upgradeTier, onboardingData, profileImage } = useUser();
+    const { streak, triggerDopamine } = useScore();
+
+    const currentStage = onboardingData?.stage || 'Late Perimenopause';
+    const stageConfig = STAGE_CONFIG[currentStage] || STAGE_CONFIG['Late Perimenopause'];
 
     const streakScale = useRef(new Animated.Value(1)).current;
+    const streakRotation = useRef(new Animated.Value(0)).current;
+    const streakShake = useRef(new Animated.Value(0)).current;
 
     const playSuccessSound = async () => {
         try {
+            // Try local asset first
             const { sound } = await Audio.Sound.createAsync(
-                require('../../assets/success.mp3') // We'll assume this exists or fails gracefully if not added yet
+                require('../../assets/success.mp3'),
+                { shouldPlay: true }
             );
-            await sound.playAsync();
         } catch (error) {
-            console.log("Audio play failed, likely missing asset", error);
+            // Fallback to high-quality remote chime
+            try {
+                const { sound } = await Audio.Sound.createAsync(
+                    { uri: 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3' },
+                    { shouldPlay: true }
+                );
+            } catch (e) {
+                console.log("Audio fallback failed", e);
+            }
         }
     };
 
     const handleStreakPress = () => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        playSuccessSound();
-        Animated.sequence([
-            Animated.timing(streakScale, { toValue: 1.4, duration: 100, useNativeDriver: true }),
-            Animated.spring(streakScale, { toValue: 1, friction: 4, tension: 100, useNativeDriver: true })
-        ]).start();
+        if (showStreakInfo) return; // Prevent double trigger
         setShowStreakInfo(true);
+
+        // --- Stage 1: The Pop (0-500ms) ---
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        playSuccessSound();
+
+        Animated.parallel([
+            Animated.timing(streakScale, {
+                toValue: 1.8,
+                duration: 200,
+                easing: Animated.Easing.out(Animated.Easing.back(1.5)),
+                useNativeDriver: true
+            }),
+            Animated.timing(streakRotation, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true
+            })
+        ]).start();
+
+        // --- Stage 2: The Burn (500-2500ms) ---
+        // Rhythmic haptics and shaking
+        const hapticInterval = setInterval(() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }, 150);
+
+        // Jitter animation
+        const jitter = Animated.loop(
+            Animated.sequence([
+                Animated.timing(streakShake, { toValue: 5, duration: 50, useNativeDriver: true }),
+                Animated.timing(streakShake, { toValue: -5, duration: 50, useNativeDriver: true }),
+            ]),
+            { iterations: 20 }
+        );
+        jitter.start();
+
+        // Pulses
+        const pulse = Animated.loop(
+            Animated.sequence([
+                Animated.timing(streakScale, { toValue: 2.0, duration: 250, useNativeDriver: true }),
+                Animated.timing(streakScale, { toValue: 1.8, duration: 250, useNativeDriver: true }),
+            ]),
+            { iterations: 4 }
+        );
+        pulse.start();
+
+        // --- Stage 3: The Resolve (2500-3000ms) ---
+        setTimeout(() => {
+            clearInterval(hapticInterval);
+            jitter.stop();
+            pulse.stop();
+
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+            Animated.parallel([
+                Animated.timing(streakRotation, {
+                    toValue: 5, // Rapid 720+ degree spin
+                    duration: 500,
+                    easing: Animated.Easing.out(Animated.Easing.exp),
+                    useNativeDriver: true
+                }),
+                Animated.spring(streakScale, {
+                    toValue: 1,
+                    friction: 4,
+                    tension: 50,
+                    useNativeDriver: true
+                }),
+                Animated.timing(streakShake, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true
+                })
+            ]).start(() => {
+                // Reset rotation for next time
+                streakRotation.setValue(0);
+                // Maybe play a final high pitch chime here if sound library allows
+            });
+        }, 2500);
     };
 
     const cycleInsight = () => {
@@ -177,10 +290,21 @@ export const DashboardScreen = ({ navigation }) => {
             {/* Sticky Top Header */}
             <View style={styles.topBar}>
                 {/* Streak Counter (Top Left) */}
-                <Animated.View style={{ transform: [{ scale: streakScale }] }}>
+                <Animated.View style={{
+                    transform: [
+                        { scale: streakScale },
+                        { translateX: streakShake },
+                        {
+                            rotate: streakRotation.interpolate({
+                                inputRange: [0, 1, 5],
+                                outputRange: ['0deg', '15deg', '720deg']
+                            })
+                        }
+                    ]
+                }}>
                     <TouchableOpacity style={styles.streakBadge} onPress={handleStreakPress} activeOpacity={0.7}>
                         <AppText style={{ fontSize: 18, marginRight: 4 }}>🔥</AppText>
-                        <AppText style={{ fontWeight: '800', color: '#FF7F50', fontSize: 16 }}>14</AppText>
+                        <AppText style={{ fontWeight: '800', color: '#FF7F50', fontSize: 16 }}>{streak}</AppText>
                     </TouchableOpacity>
                 </Animated.View>
 
@@ -189,9 +313,8 @@ export const DashboardScreen = ({ navigation }) => {
                     style={styles.profileButtonHeader}
                     onPress={() => navigation.navigate('Preferences')}
                 >
-                    <AppText style={styles.profileNameHeader}>{user?.firstName || user?.displayName?.split(' ')[0] || 'Jane'}</AppText>
                     <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop' }}
+                        source={{ uri: profileImage }}
                         style={styles.profileImageHeader}
                     />
                 </TouchableOpacity>
@@ -203,8 +326,8 @@ export const DashboardScreen = ({ navigation }) => {
                     <AppText variant="caption" style={{ color: COLORS.primary, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
                         Phase
                     </AppText>
-                    <AppText variant="heading1" style={{ textAlign: 'left', marginBottom: 4 }}>Late Menopausal Transition</AppText>
-                    <AppText style={{ textAlign: 'left', color: COLORS.textMuted }}>Fluctuating hormone levels expected</AppText>
+                    <AppText variant="heading1" style={{ textAlign: 'left', marginBottom: 4 }}>{currentStage}</AppText>
+                    <AppText style={{ textAlign: 'left', color: COLORS.textMuted }}>{stageConfig.subtext}</AppText>
                 </View>
 
                 {/* Main Status Card (Stitch Inspired) */}
@@ -217,7 +340,7 @@ export const DashboardScreen = ({ navigation }) => {
                     >
                         <DynamicRadialGraph
                             size={280}
-                            lifeStage="perimenopause"
+                            lifeStage={stageConfig.graphStage}
                             progress={ringProgress}
                             symptomsData={monthlySymptoms}
                         />
@@ -399,6 +522,10 @@ export const DashboardScreen = ({ navigation }) => {
                 </View>
             </Modal>
 
+            <ProfileStudioModal
+                visible={studioVisible}
+                onClose={() => setStudioVisible(false)}
+            />
         </View>
     );
 };
@@ -424,18 +551,17 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     profileButtonHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        paddingHorizontal: SPACING.sm,
-        paddingVertical: 6,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
         borderRadius: RADIUS.full,
         ...COLORS.shadowSoft,
+        shadowOpacity: 0.3,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 5,
     },
     profileImageHeader: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        width: 64,
+        height: 64,
+        borderRadius: 32,
     },
     profileNameHeader: {
         marginRight: SPACING.sm,

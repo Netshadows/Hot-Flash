@@ -11,6 +11,8 @@ export const UserProvider = ({ children }) => {
     // Tiers: 'free', 'premium', 'ai_pro'
     const [tier, setTier] = useState('free');
 
+    const [profileImage, setProfileImage] = useState('https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop');
+
     const [activeTracks, setActiveTracks] = useState({
         hot_flashes: true,
         sleep: true,
@@ -40,8 +42,22 @@ export const UserProvider = ({ children }) => {
         commitment: null,
     });
 
+    const [notifications, setNotifications] = useState({
+        enabled: false,
+        workflow: 'Morning Only',
+    });
+
     const updateOnboardingData = (newData) => {
         setOnboardingData(prev => ({ ...prev, ...newData }));
+    };
+
+    const updateNotifications = (newData) => {
+        setNotifications(prev => ({ ...prev, ...newData }));
+    };
+
+    const updateProfileImage = (uri) => {
+        setProfileImage(uri);
+        console.log(`[UserContext] Profile image updated to: ${uri}`);
     };
 
     const logout = async () => {
@@ -57,6 +73,10 @@ export const UserProvider = ({ children }) => {
                 energy: false,
                 mood: true,
             });
+            setNotifications({
+                enabled: false,
+                workflow: 'Morning Only',
+            });
         } catch (error) {
             console.error("Logout failed", error);
         }
@@ -70,6 +90,10 @@ export const UserProvider = ({ children }) => {
             toggleTrack,
             onboardingData,
             updateOnboardingData,
+            notifications,
+            updateNotifications,
+            profileImage,
+            updateProfileImage,
             logout
         }}>
             {children}

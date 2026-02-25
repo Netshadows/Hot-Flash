@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { AppText } from '../components/Typography';
@@ -43,7 +43,7 @@ export const MindfulnessActivityScreen = ({ navigation }) => {
             Animated.timing(scaleAnim, {
                 toValue: 2.5,
                 duration: inhaleDuration,
-                easing: Easing.inOut(Easing.ease),
+                easing: Animated.Easing.inOut(Animated.Easing.ease),
                 useNativeDriver: true,
             }),
             Animated.timing(opacityAnim, {
@@ -62,7 +62,7 @@ export const MindfulnessActivityScreen = ({ navigation }) => {
                     Animated.timing(scaleAnim, {
                         toValue: 1,
                         duration: exhaleDuration,
-                        easing: Easing.inOut(Easing.ease),
+                        easing: Animated.Easing.inOut(Animated.Easing.ease),
                         useNativeDriver: true,
                     }),
                     Animated.timing(opacityAnim, {

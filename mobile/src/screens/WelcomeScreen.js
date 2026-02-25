@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
@@ -15,7 +15,10 @@ export const WelcomeScreen = ({ navigation }) => {
 
             <View style={styles.content}>
                 <View style={styles.logoContainer}>
-                    <View style={styles.logoCircle} />
+                    <Image
+                        source={require('../../assets/logo_app.png')}
+                        style={styles.logoImage}
+                    />
                     <AppText variant="heading1" style={styles.title}>Lumina</AppText>
                     <AppText variant="body" style={styles.subtitle}>Your lifecycle, understood.</AppText>
                 </View>
@@ -50,13 +53,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 60,
     },
-    logoCircle: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: COLORS.primary,
-        marginBottom: SPACING.lg,
-        opacity: 0.8,
+    logoImage: {
+        width: 120,
+        height: 120,
+        borderRadius: 20,
+        marginBottom: SPACING.md,
     },
     title: {
         fontSize: 32,

@@ -7,12 +7,44 @@ import { useUser } from '../context/UserContext';
 import { Button } from '../components/Button';
 
 export const OnboardingDataScreen = ({ navigation }) => {
-    const { onboardingData, updateOnboardingData } = useUser();
-    const [localData, setLocalData] = useState(onboardingData);
+    const { onboardingData } = useUser();
 
-    const handleSave = () => {
-        updateOnboardingData(localData);
-        navigation.goBack();
+    const SYMPTOM_LABELS = {
+        hot_flashes: 'Hot Flashes',
+        night_sweats: 'Night Sweats',
+        palpitations: 'Heart Palpitations',
+        insomnia: 'Insomnia',
+        waking_early: 'Waking Early',
+        fatigue: 'Fatigue',
+        weight_gain: 'Weight Gain',
+        bloating: 'Bloating',
+        metabolism: 'Metabolism Shift',
+        low_energy: 'Low Energy',
+        joint_pain: 'Joint Pain',
+        stiffness: 'Muscle Stiffness',
+        mood_swings: 'Mood Swings',
+        anxiety: 'Anxiety',
+        irritability: 'Irritability',
+        brain_fog: 'Brain Fog',
+        memory: 'Memory Lapses',
+        low_libido: 'Low Libido',
+    };
+
+    const GOAL_LABELS = {
+        hot_flashes: 'Vasomotor (Hot Flashes)',
+        sleep: 'Sleep & Restoration',
+        weight: 'Metabolism & Weight',
+        energy: 'Energy & Vitality',
+        mood: 'Mental Health & Mood',
+    };
+
+    const FRICTION_LABELS = {
+        energy: 'More Energy',
+        sleep: 'Better Sleep',
+        clarity: 'Mental Clarity',
+        hot_flashes: 'Manage Hot Flashes',
+        joint_pain: 'Reduce Joint Pain',
+        mood: 'Balance Mood',
     };
 
     return (
@@ -35,7 +67,7 @@ export const OnboardingDataScreen = ({ navigation }) => {
                     <View style={styles.tagContainer}>
                         {onboardingData.frictionPoints.length > 0 ? onboardingData.frictionPoints.map((point, index) => (
                             <View key={index} style={styles.tag}>
-                                <AppText style={styles.tagText}>{point}</AppText>
+                                <AppText style={styles.tagText}>{FRICTION_LABELS[point] || point}</AppText>
                             </View>
                         )) : <AppText variant="body" style={styles.valueText}>None selected</AppText>}
                     </View>
@@ -46,7 +78,9 @@ export const OnboardingDataScreen = ({ navigation }) => {
                     <View style={styles.tagContainer}>
                         {onboardingData.symptoms.length > 0 ? onboardingData.symptoms.map((symptom, index) => (
                             <View key={index} style={[styles.tag, { backgroundColor: '#FFE4E8' }]}>
-                                <AppText style={[styles.tagText, { color: COLORS.primary }]}>{symptom}</AppText>
+                                <AppText style={[styles.tagText, { color: COLORS.primary }]}>
+                                    {SYMPTOM_LABELS[symptom] || symptom}
+                                </AppText>
                             </View>
                         )) : <AppText variant="body" style={styles.valueText}>None selected</AppText>}
                     </View>
@@ -57,7 +91,9 @@ export const OnboardingDataScreen = ({ navigation }) => {
                     <View style={styles.tagContainer}>
                         {onboardingData.goals.length > 0 ? onboardingData.goals.map((goal, index) => (
                             <View key={index} style={[styles.tag, { backgroundColor: '#E0F2F1' }]}>
-                                <AppText style={[styles.tagText, { color: '#00796B' }]}>{goal}</AppText>
+                                <AppText style={[styles.tagText, { color: '#00796B' }]}>
+                                    {GOAL_LABELS[goal] || goal}
+                                </AppText>
                             </View>
                         )) : <AppText variant="body" style={styles.valueText}>None selected</AppText>}
                     </View>
@@ -70,7 +106,7 @@ export const OnboardingDataScreen = ({ navigation }) => {
             </ScrollView>
 
             <View style={styles.footer}>
-                <Button title="Edit in Onboarding Flow" onPress={() => navigation.navigate('OnboardingProfile')} variant="secondary" />
+                <Button title="Edit in Onboarding Flow" onPress={() => navigation.navigate('OnboardingSDOH')} variant="secondary" />
             </View>
         </View>
     );

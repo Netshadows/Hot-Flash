@@ -16,10 +16,12 @@ export const ScoreProvider = ({ children }) => {
     const triggerDopamine = (points = 50, message = "Daily Goal Complete!") => {
         setXp(prev => prev + points);
 
-        // Heavy Haptics sequence
+        // Signature "Addictive" Haptics sequence
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium), 150);
-        setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 350);
+        setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), 100);
+        setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), 200);
+        setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium), 300);
+        setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 500);
 
         // Queue visual animation overlay
         const id = nextId.current++;

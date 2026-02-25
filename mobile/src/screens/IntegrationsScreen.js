@@ -27,11 +27,43 @@ export const IntegrationsScreen = ({ navigation }) => {
         }));
     };
 
-    const apps = [
-        { id: 'apple_health', name: 'Apple Health', description: 'Sync vitals, sleep, & steps.', premium: false, icon: 'fitness' },
-        { id: 'google_fit', name: 'Google Fit', description: 'Sync vitals & activity data.', premium: false, icon: 'watch' },
-        { id: 'oura', name: 'Oura Ring', description: 'Advanced sleep & temperature tracking.', premium: true, icon: 'moon' },
-        { id: 'epic_fhir', name: 'Epic MyChart (EHR)', description: 'Import clinical labs (hormones, bounds).', premium: true, icon: 'medkit' },
+    const integrationSections = [
+        {
+            title: "Core Ecosystems",
+            data: [
+                { id: 'apple_health', name: 'Apple Health', description: 'Sync vitals, sleep, & steps.', premium: false, icon: 'fitness' },
+                { id: 'google_fit', name: 'Google Fit', description: 'Sync vitals & activity data.', premium: false, icon: 'watch' },
+            ]
+        },
+        {
+            title: "Wearables",
+            data: [
+                { id: 'oura', name: 'Oura Ring', description: 'Advanced sleep & temperature tracking.', premium: true, icon: 'moon' },
+                { id: 'ringconn', name: 'RingConn', description: '24/7 finger-based health monitoring.', premium: true, icon: 'radio-button-off' },
+                { id: 'whoop', name: 'Whoop', description: 'High-fidelity recovery and strain tracking.', premium: true, icon: 'pulse' },
+                { id: 'garmin', name: 'Garmin', description: 'Performance and endurance metrics.', premium: false, icon: 'speedometer' },
+                { id: 'fitbit', name: 'Fitbit', description: 'Activity, heart rate, and sleep data.', premium: false, icon: 'walk' },
+                { id: 'samsung_health', name: 'Samsung Health', description: 'Comprehensive wellness tracking.', premium: false, icon: 'heart' },
+                { id: 'withings', name: 'Withings', description: 'Smart scales and health hardware.', premium: false, icon: 'analytics' },
+            ]
+        },
+        {
+            title: "Diagnostic Devices",
+            data: [
+                { id: 'cgm', name: 'Continuous Glucose (CGM)', description: 'Glucose monitoring for metabolic health.', premium: true, icon: 'water' },
+                { id: 'cpap', name: 'CPAP Machine', description: 'Sleep apnea and respiration metrics.', premium: true, icon: 'air' },
+                { id: 'blood_pressure', name: 'Blood Pressure Cuff', description: 'Track hypertension and cardiovascular load.', premium: false, icon: 'thermometer' },
+                { id: 'smart_scale', name: 'Smart Scale', description: 'Body composition and weight trends.', premium: false, icon: 'body' },
+                { id: 'thermometer', name: 'Smart Thermometer', description: 'Core temperature tracking and cycle trends.', premium: false, icon: 'thermometer-outline' },
+            ]
+        },
+        {
+            title: "Clinical Portals",
+            data: [
+                { id: 'epic_fhir', name: 'Epic MyChart', description: 'Import clinical labs and hormone panels.', premium: true, icon: 'medkit' },
+                { id: 'cerner', name: 'Cerner Health', description: 'Link hospital records and prescriptions.', premium: true, icon: 'document-text' },
+            ]
+        }
     ];
 
     return (
@@ -48,40 +80,45 @@ export const IntegrationsScreen = ({ navigation }) => {
                     Connect your wearables and clinical portals to enrich Lumina's personalized AI insights and symptom correlations.
                 </AppText>
 
-                <View style={styles.listContainer}>
-                    {apps.map(app => {
-                        const isConnected = connectedApps[app.id];
-                        return (
-                            <View key={app.id} style={styles.integrationCard}>
-                                <View style={styles.cardHeader}>
-                                    <View style={styles.iconBox}>
-                                        <Ionicons name={app.icon} size={28} color={app.premium ? '#A5B4FC' : COLORS.textMuted} />
-                                    </View>
-                                    <View style={styles.textContainer}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                            <AppText variant="heading2" style={styles.appName}>{app.name}</AppText>
-                                            {app.premium && (
-                                                <View style={styles.premiumBadge}>
-                                                    <AppText style={styles.premiumText}>PRO</AppText>
+                {integrationSections.map((section, sIdx) => (
+                    <View key={sIdx} style={styles.sectionContainer}>
+                        <AppText variant="heading2" style={styles.sectionTitle}>{section.title}</AppText>
+                        <View style={styles.listContainer}>
+                            {section.data.map(app => {
+                                const isConnected = connectedApps[app.id];
+                                return (
+                                    <View key={app.id} style={styles.integrationCard}>
+                                        <View style={styles.cardHeader}>
+                                            <View style={styles.iconBox}>
+                                                <Ionicons name={app.icon} size={28} color={app.premium ? '#A5B4FC' : COLORS.textMuted} />
+                                            </View>
+                                            <View style={styles.textContainer}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                    <AppText variant="heading2" style={styles.appName}>{app.name}</AppText>
+                                                    {app.premium && (
+                                                        <View style={styles.premiumBadge}>
+                                                            <AppText style={styles.premiumText}>PRO</AppText>
+                                                        </View>
+                                                    )}
                                                 </View>
-                                            )}
+                                                <AppText variant="caption" style={styles.appDesc}>{app.description}</AppText>
+                                            </View>
                                         </View>
-                                        <AppText variant="caption" style={styles.appDesc}>{app.description}</AppText>
-                                    </View>
-                                </View>
 
-                                <TouchableOpacity
-                                    style={[styles.connectBtn, isConnected && styles.connectBtnActive]}
-                                    onPress={() => toggleConnection(app.id, app.premium)}
-                                >
-                                    <AppText style={[styles.connectBtnText, isConnected && styles.connectBtnTextActive]}>
-                                        {isConnected ? 'Disconnect' : 'Connect'}
-                                    </AppText>
-                                </TouchableOpacity>
-                            </View>
-                        );
-                    })}
-                </View>
+                                        <TouchableOpacity
+                                            style={[styles.connectBtn, isConnected && styles.connectBtnActive]}
+                                            onPress={() => toggleConnection(app.id, app.premium)}
+                                        >
+                                            <AppText style={[styles.connectBtnText, isConnected && styles.connectBtnTextActive]}>
+                                                {isConnected ? 'Disconnect' : 'Connect'}
+                                            </AppText>
+                                        </TouchableOpacity>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                ))}
             </ScrollView>
 
             <PaywallModal
@@ -112,6 +149,8 @@ const styles = StyleSheet.create({
     title: { fontSize: 24, flex: 1 },
     content: { padding: SPACING.xl, paddingBottom: 100 },
     subtitle: { color: COLORS.textMuted, marginBottom: SPACING.xl, lineHeight: 22 },
+    sectionContainer: { marginBottom: SPACING.xl },
+    sectionTitle: { fontSize: 20, color: COLORS.textMain, marginBottom: SPACING.lg, fontWeight: '700' },
     listContainer: { gap: SPACING.lg },
     integrationCard: {
         backgroundColor: COLORS.surface,

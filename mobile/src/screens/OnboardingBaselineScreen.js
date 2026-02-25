@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList, Animated } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { ScientificHint } from '../components/ScientificHint';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
-import { Picker } from '@react-native-picker/picker';
+
+const ITEM_WIDTH = 80;
+const AGES = Array.from({ length: 60 }, (_, i) => i + 18);
 
 export const OnboardingBaselineScreen = ({ navigation, route }) => {
     const { profileData } = route.params || { profileData: {} };
@@ -14,13 +16,35 @@ export const OnboardingBaselineScreen = ({ navigation, route }) => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [age, setAge] = useState(35);
 
+    const scrollX = useRef(new Animated.Value(0)).current;
+    const flatListRef = useRef(null);
+
+    // Center the initial age
+    useEffect(() => {
+        setTimeout(() => {
+            const index = AGES.indexOf(35);
+            if (flatListRef.current && index !== -1) {
+                flatListRef.current.scrollToIndex({ index, animated: false, viewPosition: 0.5 });
+            }
+        }, 100);
+    }, []);
+
     const handleNext = () => {
-        // Construct the payload prioritizing specific date if selected, otherwise generic
         const lastPeriodData = selectedDate ? { type: 'specific', date: selectedDate.toISOString() } : { type: 'generic', value: generalResponse };
         navigation.navigate('OnboardingLifestyle', {
             profileData: { ...profileData, baseline: { lastPeriod: lastPeriodData, age } }
         });
     }
+
+    const onScroll = Animated.event(
+        [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+        { useNativeDriver: false }
+    );
+
+    const onMomentumScrollEnd = (event) => {
+        const index = Math.round(event.nativeEvent.contentOffset.x / ITEM_WIDTH);
+        setAge(AGES[index]);
+    };
 
     // Mini Calendar Logic
     const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
@@ -33,24 +57,81 @@ export const OnboardingBaselineScreen = ({ navigation, route }) => {
     const handleDateSelect = (day) => {
         const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
         setSelectedDate(d);
-        setGeneralResponse(null); // Clear generic if specific mapped
+        setGeneralResponse(null);
     };
 
     const handleGenericSelect = (val) => {
         setGeneralResponse(val);
-        setSelectedDate(null); // Clear specific if generic mapped
+        setSelectedDate(null);
+    };
+
+    const renderAgeItem = ({ item, index }) => {
+        const range = [
+            (index - 2) * ITEM_WIDTH,
+            (index - 1) * ITEM_WIDTH,
+            index * ITEM_WIDTH,
+            (index + 1) * ITEM_WIDTH,
+            (index + 2) * ITEM_WIDTH,
+        ];
+
+        const outputRange = [0.4, 0.6, 1, 0.6, 0.4];
+        const scale = scrollX.interpolate({ inputRange: range, outputRange: [0.8, 0.9, 1.2, 0.9, 0.8], extrapolate: 'clamp' });
+        const opacity = scrollX.interpolate({ inputRange: range, outputRange, extrapolate: 'clamp' });
+
+        return (
+            <Animated.View style={[styles.ageItem, { opacity, transform: [{ scale }] }]}>
+                <AppText style={[styles.ageText, age === item && styles.ageTextActive]}>{item}</AppText>
+                <View style={[styles.rulerTick, age === item && styles.rulerTickActive]} />
+            </Animated.View>
+        );
     };
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl }}>
-                <AppText variant="heading1" style={styles.title}>Let's get your baseline</AppText>
-                <View style={{ marginBottom: SPACING.xl }}><ScientificHint title="Cycle Baselines" rationale="The length of time since your last period acts as the primary differentiator between Early Perimenopause, Late Perimenopause, and Post-Menopause." /></View>
+        <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md }}>
+                <AppText variant="heading1" style={styles.title}>Your Baseline</AppText>
             </View>
 
+            {/* AGE SECTION - NOW AT TOP */}
             <AppText variant="body" style={styles.prompt}>
-                When was your last period?
+                How old are you?
             </AppText>
+
+            <View style={styles.pickerWrapper}>
+                <View style={styles.selectionIndicator} />
+                <Animated.FlatList
+                    ref={flatListRef}
+                    data={AGES}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item) => item.toString()}
+                    renderItem={renderAgeItem}
+                    contentContainerStyle={styles.pickerContent}
+                    snapToInterval={ITEM_WIDTH}
+                    decelerationRate="fast"
+                    onScroll={onScroll}
+                    onMomentumScrollEnd={onMomentumScrollEnd}
+                    scrollEventThrottle={16}
+                    getItemLayout={(_, index) => ({
+                        length: ITEM_WIDTH,
+                        offset: ITEM_WIDTH * index,
+                        index,
+                    })}
+                />
+                <View style={styles.selectedAgeLabel}>
+                    <AppText style={styles.selectedAgeText}>{age} years</AppText>
+                </View>
+            </View>
+
+            {/* PERIOD SECTION - NOW BELOW AGE */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: SPACING.xl, marginBottom: SPACING.md }}>
+                <AppText variant="body" style={[styles.prompt, { marginBottom: 0 }]}>
+                    When was your last period?
+                </AppText>
+                <View style={{ marginLeft: SPACING.xs }}>
+                    <ScientificHint title="Cycle Baselines" rationale="The length of time since your last period acts as the primary differentiator between stages." />
+                </View>
+            </View>
 
             {/* Inline Mini Calendar */}
             <View style={styles.calendarCard}>
@@ -113,21 +194,6 @@ export const OnboardingBaselineScreen = ({ navigation, route }) => {
                 ))}
             </View>
 
-            <AppText variant="body" style={styles.prompt}>
-                How old are you?
-            </AppText>
-            <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={age}
-                    onValueChange={(itemValue) => setAge(itemValue)}
-                    style={styles.picker}
-                >
-                    {Array.from({ length: 60 }, (_, i) => i + 18).map(a => (
-                        <Picker.Item key={a} label={`${a} years`} value={a} />
-                    ))}
-                </Picker>
-            </View>
-
             <Button
                 title="Continue"
                 onPress={handleNext}
@@ -145,17 +211,78 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: SPACING.lg,
-        paddingTop: 60,
+        paddingTop: 80,
     },
     title: {
-        marginBottom: SPACING.xl,
+        marginBottom: SPACING.md,
         color: '#2D2D2D',
     },
     prompt: {
-        fontWeight: '600',
-        marginBottom: SPACING.md,
+        fontWeight: '700',
+        marginBottom: SPACING.lg,
         color: '#4A4A4A',
         fontSize: 18
+    },
+    pickerWrapper: {
+        height: 180,
+        backgroundColor: '#FFF',
+        borderRadius: RADIUS.lg,
+        marginBottom: SPACING.xl,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        justifyContent: 'center',
+    },
+    pickerContent: {
+        paddingHorizontal: (ITEM_WIDTH * 2),
+        alignItems: 'center',
+    },
+    selectionIndicator: {
+        position: 'absolute',
+        top: '15%',
+        bottom: '15%',
+        left: '50%',
+        width: 2,
+        backgroundColor: COLORS.primary,
+        marginLeft: -1,
+        zIndex: 10,
+        borderRadius: 1,
+    },
+    ageItem: {
+        width: ITEM_WIDTH,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    ageText: {
+        fontSize: 24,
+        fontWeight: '400',
+        color: '#999',
+    },
+    ageTextActive: {
+        color: COLORS.primary,
+        fontWeight: '800',
+        fontSize: 32,
+    },
+    rulerTick: {
+        height: 12,
+        width: 1,
+        backgroundColor: '#CCC',
+        marginTop: 12,
+    },
+    rulerTickActive: {
+        backgroundColor: COLORS.primary,
+        height: 20,
+        width: 2,
+    },
+    selectedAgeLabel: {
+        position: 'absolute',
+        bottom: 15,
+        alignSelf: 'center',
+    },
+    selectedAgeText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: COLORS.primary,
     },
     calendarCard: {
         backgroundColor: '#FFF',
@@ -196,7 +323,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
     },
     dayCell: {
-        width: '14.28%', // 100/7
+        width: '14.28%',
         aspectRatio: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -239,17 +366,8 @@ const styles = StyleSheet.create({
         color: COLORS.primary,
         fontWeight: '700',
     },
-    pickerContainer: {
-        backgroundColor: '#F5F5F5',
-        borderRadius: RADIUS.md,
-        marginBottom: SPACING.xl,
-        overflow: 'hidden',
-    },
-    picker: {
-        width: '100%',
-        height: 150,
-    },
     nextButton: {
         marginTop: SPACING.md,
+        marginBottom: 60,
     }
 });
