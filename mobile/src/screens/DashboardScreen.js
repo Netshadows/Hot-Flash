@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, Text, TouchableOpacity, Image, Modal, Animated } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions, Text, TouchableOpacity, Image, Modal, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppText } from '../components/Typography';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
@@ -114,7 +114,7 @@ export const DashboardScreen = ({ navigation }) => {
             Animated.timing(streakScale, {
                 toValue: 1.8,
                 duration: 200,
-                easing: Animated.Easing.out(Animated.Easing.back(1.5)),
+                easing: Easing.out(Easing.back(1.5)),
                 useNativeDriver: true
             }),
             Animated.timing(streakRotation, {
@@ -162,7 +162,7 @@ export const DashboardScreen = ({ navigation }) => {
                 Animated.timing(streakRotation, {
                     toValue: 5, // Rapid 720+ degree spin
                     duration: 500,
-                    easing: Animated.Easing.out(Animated.Easing.exp),
+                    easing: Easing.out(Easing.exp),
                     useNativeDriver: true
                 }),
                 Animated.spring(streakScale, {

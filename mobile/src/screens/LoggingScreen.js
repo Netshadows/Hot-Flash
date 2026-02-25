@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Text, Dimensions, Animated } from 'react-native';
+import { View, ScrollView, StyleSheet, TouchableOpacity, Text, Dimensions, Animated, Easing } from 'react-native';
 import { AppText } from '../components/Typography';
 import { Button } from '../components/Button';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
@@ -50,7 +50,7 @@ export const LoggingScreen = ({ navigation }) => {
             Animated.timing(toastTranslateY, {
                 toValue: 20,
                 duration: 300,
-                easing: Animated.Easing.out(Animated.Easing.back(1.5)),
+                easing: Easing.out(Easing.back(1.5)),
                 useNativeDriver: true,
             }),
             Animated.delay(3000),
